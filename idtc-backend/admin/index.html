@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IDTC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script defer src="/admin/vendor/chart.js"></script>
+  <script defer src="/admin/admin.js"></script>
+  <script defer src="/admin/vendor/alpine.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+<div x-data="admin" x-cloak>
+
+  <!-- Toast -->
+  <div class="fixed right-4 top-4 z-[60] flex w-80 flex-col gap-2">
+    <template x-for="item in toasts" :key="item.id">
+      <div class="rounded-lg px-4 py-3 text-sm font-medium shadow-lg"
+           :class="item.type === 'error' ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'" x-text="item.message"></div>
+    </template>
+  </div>
+
+  <!-- Dialog konfirmasi / input (pengganti confirm & prompt bawaan browser) -->
+  <div x-show="dialog" class="fixed inset-0 z-[55] flex items-center justify-center bg-slate-900/40 p-4" @click.self="closeDialog(false)" @keydown.escape.window="dialog && closeDialog(false)">
+    <form class="card w-full max-w-md p-6" x-show="dialog" @submit.prevent="closeDialog(true)" role="dialog" aria-modal="true" :aria-label="dialog?.title">
+      <h3 class="mb-2 text-lg font-extrabold" x-text="dialog?.title"></h3>
+      <p class="mb-4 whitespace-pre-line text-sm text-slate-600" x-show="dialog?.message" x-text="dialog?.message"></p>
+      <template x-if="dialog?.input">
+        <input class="input mb-4" :class="dialog.readonly && 'bg-slate-100 text-center font-mono text-lg font-bold'" x-model="dialog.value"
+               :readonly="dialog.readonly" :placeholder="dialog.placeholder" x-init="$nextTick(() => { $el.focus(); dialog?.readonly && $el.select(); })">
+      </template>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-secondary" x-show="dialog?.cancelText" @click="closeDialog(false)" x-text="dialog?.cancelText"></button>
+        <button class="btn" :class="dialog?.danger ? 'btn-danger' : 'btn-primary'" x-text="dialog?.confirmText"></button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading -->
+  <div x-show="!ready" class="flex min-h-screen items-center justify-center text-slate-400">Memuat…</div>
+
+  <!-- Login -->
+  <div x-show="ready && !user" class="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-amber-50 px-4">
+    <form @submit.prevent="doLogin" class="card w-full max-w-sm p-8">
+      <div class="mb-6 text-center">
+        <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-700 text-2xl font-extrabold text-white">I</div>
+        <h1 class="text-xl font-extrabold text-slate-900">IDTC Admin</h1>
+        <p class="text-sm text-slate-500">Panel pengelolaan aplikasi IDTC</p>
+      </div>
+      <label class="label" for="identifier">Email / No. HP</label>
+      <input id="identifier" class="input mb-4" x-model="login.identifier" autocomplete="username" required>
+      <label class="label" for="password">Password</label>
+      <input id="password" type="password" class="input mb-4" x-model="login.password" autocomplete="current-password" required>
+      <p x-show="login.error" class="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700" x-text="login.error"></p>
+      <button class="btn btn-primary w-full" :disabled="login.loading" x-text="login.loading ? 'Memproses…' : 'Masuk'"></button>
+    </form>
+  </div>
+
+  <!-- App -->
+  <div x-show="ready && user" class="flex min-h-screen">
+    <aside class="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-200 bg-white p-4 md:flex">
+      <div class="mb-6 flex items-center gap-2 px-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 font-extrabold text-white">I</div>
+        <div>
+          <p class="text-sm font-extrabold leading-tight">IDTC Admin</p>
+          <p class="text-xs text-slate-500" x-text="roleLabels[user?.role] || ''"></p>
+        </div>
+      </div>
+      <nav class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
+        <template x-for="item in navItems" :key="item.id">
+          <button class="nav-item" :class="tab === item.id && 'nav-item-active'" @click="go(item.id)">
+            <span x-text="item.icon"></span>
+            <span class="flex-1" x-text="item.label"></span>
+            <span x-show="item.badge" class="badge bg-rose-100 text-rose-700" x-text="item.badge"></span>
+          </button>
+        </template>
+      </nav>
+      <div class="mt-4 border-t border-slate-100 pt-4">
+        <p class="truncate px-2 text-sm font-semibold" x-text="user?.name"></p>
+        <p class="truncate px-2 text-xs text-slate-500" x-text="user?.email"></p>
+        <button class="btn btn-secondary mt-3 w-full" @click="logout">Keluar</button>
+      </div>
+    </aside>
+
+    <main class="min-w-0 flex-1 p-4 md:p-8">
+      <!-- Mobile nav -->
+      <div class="mb-4 md:hidden">
+        <select class="input" :value="tab" @change="go($event.target.value)">
+          <template x-for="item in navItems" :key="item.id"><option :value="item.id" x-text="item.label"></option></template>
+        </select>
+      </div>
+
+      <!-- Dashboard -->
+      <section x-show="tab === 'dashboard'">
+        <h2 class="mb-1 text-2xl font-extrabold">Assalamu'alaikum, <span x-text="user?.name"></span></h2>
+        <p class="mb-6 text-sm text-slate-500">Ringkasan aktivitas aplikasi IDTC.</p>
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-show="dashboard">
+          <div class="card p-5"><p class="label">Total anggota</p><p class="text-3xl font-extrabold" x-text="dashboard?.users.total"></p><p class="text-xs text-slate-500"><span x-text="dashboard?.users.active"></span> aktif · <span x-text="dashboard?.users.admins"></span> admin</p></div>
+          <div class="card p-5"><p class="label">Membership</p>
+            <p class="text-sm">Free: <b x-text="dashboard?.users.byMembership.free || 0"></b></p>
+            <p class="text-sm">Membership: <b x-text="dashboard?.users.byMembership.membership || 0"></b></p>
+            <p class="text-sm">Sahabat: <b x-text="dashboard?.users.byMembership.sahabat || 0"></b></p></div>
+          <button class="card p-5 text-left hover:border-brand-500" @click="go('lapak')"><p class="label">Lapak menunggu review</p><p class="text-3xl font-extrabold text-amber-600" x-text="dashboard?.lapak.pending"></p><p class="text-xs text-slate-500"><span x-text="dashboard?.lapak.approved"></span> produk aktif</p></button>
+          <button class="card p-5 text-left hover:border-brand-500" @click="go('events')"><p class="label">Event mendatang</p><p class="text-3xl font-extrabold" x-text="dashboard?.events.upcoming"></p></button>
+          <button class="card p-5 text-left hover:border-brand-500" @click="go('registrations')"><p class="label">Registrasi belum dikonfirmasi</p><p class="text-3xl font-extrabold text-sky-600" x-text="dashboard?.registrations.pending"></p></button>
+          <button class="card p-5 text-left hover:border-brand-500" @click="go('testimonials')"><p class="label">Testimoni menunggu</p><p class="text-3xl font-extrabold text-amber-600" x-text="dashboard?.testimonials.pending"></p></button>
+          <button class="card p-5 text-left hover:border-brand-500" @click="go('questions')"><p class="label">Pertanyaan belum dijawab praktisi</p><p class="text-3xl font-extrabold text-rose-600" x-text="dashboard?.questions.unanswered"></p></button>
+        </div>
+
+        <!-- Tren -->
+        <div class="mb-4 mt-8 flex flex-wrap items-end justify-between gap-3">
+          <div><h3 class="text-xl font-extrabold">Tren aktivitas</h3><p class="text-sm text-slate-500" x-show="trends">Periode <span x-text="formatDate(trends?.from)"></span> – <span x-text="formatDate(trends?.to)"></span> (WIB)</p></div>
+          <div class="flex gap-1 rounded-lg border border-slate-200 bg-white p-1" role="group" aria-label="Rentang hari">
+            <template x-for="option in [7, 30, 90]" :key="option">
+              <button class="rounded-md px-3 py-1 text-sm font-semibold" :class="trendDays === option ? 'bg-brand-700 text-white' : 'text-slate-600 hover:bg-slate-100'" @click="loadTrends(option)" x-text="option + ' hari'"></button>
+            </template>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-show="trends">
+          <div class="card p-5"><p class="label">Aktif hari ini (DAU)</p><p class="text-3xl font-extrabold" x-text="trends?.summary.dau"></p></div>
+          <div class="card p-5"><p class="label">Aktif 7 hari (WAU)</p><p class="text-3xl font-extrabold" x-text="trends?.summary.wau"></p></div>
+          <div class="card p-5"><p class="label">Aktif 30 hari (MAU)</p><p class="text-3xl font-extrabold" x-text="trends?.summary.mau"></p><p class="text-xs text-slate-500"><span x-text="percent(trends?.summary.mau, trends?.summary.totalUsers)"></span> dari total anggota</p></div>
+          <div class="card p-5"><p class="label">Anggota baru</p><p class="text-3xl font-extrabold" x-text="trends?.summary.newUsers"></p>
+            <p class="text-xs" :class="growthClass(trends?.summary.newUsers, trends?.summary.newUsersPrevious)" x-text="growthLabel(trends?.summary.newUsers, trends?.summary.newUsersPrevious)"></p></div>
+        </div>
+        <div class="mt-4 grid gap-4 xl:grid-cols-2">
+          <div class="card p-5"><p class="mb-3 font-bold">Anggota aktif &amp; anggota baru per hari</p><div class="relative h-64"><canvas id="chart-users" aria-label="Grafik anggota aktif dan baru" role="img"></canvas></div></div>
+          <div class="card p-5"><p class="mb-3 font-bold">Pengisi riyadhoh per hari</p><div class="relative h-64"><canvas id="chart-riyadhoh" aria-label="Grafik pengisi riyadhoh" role="img"></canvas></div></div>
+          <div class="card p-5 xl:col-span-2"><p class="mb-3 font-bold">Aktivitas komunitas per hari</p><div class="relative h-64"><canvas id="chart-activity" aria-label="Grafik aktivitas komunitas" role="img"></canvas></div></div>
+        </div>
+        <div class="mt-4 grid gap-4 xl:grid-cols-2" x-show="trends">
+          <div class="card p-5">
+            <p class="mb-3 font-bold">Anggota per korda</p>
+            <template x-for="item in trends?.usersByKorda || []" :key="item.label">
+              <div class="mb-2">
+                <div class="flex justify-between text-sm"><span x-text="item.label"></span><b x-text="item.total"></b></div>
+                <div class="h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-brand-500" :style="`width: ${barWidth(item.total, trends.usersByKorda)}%`"></div></div>
+              </div>
+            </template>
+          </div>
+          <div class="card p-5">
+            <p class="mb-3 font-bold">Event mendatang terpopuler</p>
+            <p class="text-sm text-slate-500" x-show="!trends?.topEvents?.length">Belum ada event mendatang.</p>
+            <template x-for="item in trends?.topEvents || []" :key="item.id">
+              <div class="mb-3">
+                <div class="flex justify-between gap-2 text-sm"><span class="font-semibold" x-text="item.title"></span><span class="shrink-0 text-slate-500" x-text="item.registrations + (item.quota ? ' / ' + item.quota : '') + ' peserta'"></span></div>
+                <p class="text-xs text-slate-500" x-text="formatDate(item.date)"></p>
+                <div class="mt-1 h-2 rounded-full bg-slate-100" x-show="item.quota"><div class="h-2 rounded-full bg-amber-500" :style="`width: ${Math.min(100, Math.round(item.registrations / item.quota * 100))}%`"></div></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sistem -->
+      <section x-show="tab === 'system'">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div><h2 class="text-2xl font-extrabold">Kesehatan Sistem</h2><p class="text-sm text-slate-500">Diperiksa <span x-text="health ? formatDate(health.checkedAt, true) : '-'"></span>. Angka request & error dihitung sejak server terakhir start.</p></div>
+          <button class="btn btn-secondary" @click="loadHealth()" :disabled="healthLoading" x-text="healthLoading ? 'Memeriksa…' : 'Periksa ulang'"></button>
+        </div>
+        <template x-if="health">
+          <div>
+            <div class="card mb-4 flex items-center gap-3 p-4" :class="health.status === 'ok' ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'">
+              <span class="text-2xl" x-text="health.status === 'ok' ? '✅' : '⚠️'"></span>
+              <div><p class="font-bold" x-text="health.status === 'ok' ? 'Semua layanan berjalan normal' : 'Database bermasalah'"></p>
+                <p class="text-sm text-slate-600" x-text="health.database.ok ? 'Database merespons dalam ' + health.database.latencyMs + ' ms' : health.database.error"></p></div>
+            </div>
+            <template x-if="healthWarnings.length">
+              <div class="card mb-4 border-amber-200 bg-amber-50 p-4">
+                <p class="mb-1 font-bold text-amber-800">Perlu dicek</p>
+                <ul class="list-disc pl-5 text-sm text-amber-900"><template x-for="warning in healthWarnings" :key="warning"><li x-text="warning"></li></template></ul>
+              </div>
+            </template>
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div class="card p-5"><p class="label">Database</p>
+                <template x-if="health.database.ok"><div class="space-y-1 text-sm">
+                  <p>Latensi: <b x-text="health.database.latencyMs + ' ms'"></b></p>
+                  <p>Ukuran: <b x-text="bytes(health.database.sizeBytes)"></b></p>
+                  <p>PostgreSQL <span x-text="health.database.version"></span></p>
+                  <p>Koneksi pool: <b x-text="health.database.pool.total + ' / ' + health.database.pool.max"></b> (<span x-text="health.database.pool.waiting"></span> antre)</p>
+                </div></template>
+                <p class="text-sm text-rose-600" x-show="!health.database.ok" x-text="health.database.error"></p>
+              </div>
+              <div class="card p-5"><p class="label">Penyimpanan upload</p><div class="space-y-1 text-sm">
+                <p><b x-text="health.storage.files"></b> file · <b x-text="bytes(health.storage.bytes)"></b></p>
+                <template x-for="item in health.storage.purposes" :key="item.purpose"><p class="text-slate-600"><span x-text="purposeLabels[item.purpose] || item.purpose"></span>: <span x-text="item.files + ' file (' + bytes(item.bytes) + ')'"></span></p></template>
+                <p x-show="health.storage.disk">Disk kosong: <b x-text="bytes(health.storage.disk?.freeBytes)"></b> dari <span x-text="bytes(health.storage.disk?.totalBytes)"></span></p>
+              </div></div>
+              <div class="card p-5"><p class="label">Server</p><div class="space-y-1 text-sm">
+                <p>Berjalan: <b x-text="duration(health.server.uptimeSeconds)"></b></p>
+                <p>Memori: <b x-text="bytes(health.server.memory.rssBytes)"></b></p>
+                <p>Node <span x-text="health.server.nodeVersion"></span> · <span x-text="health.server.env.nodeEnv"></span></p>
+                <p class="break-all">URL publik: <span x-text="health.server.env.publicBaseUrl || '(mengikuti host request)'"></span></p>
+              </div></div>
+              <div class="card p-5"><p class="label">Aplikasi</p><div class="space-y-1 text-sm">
+                <p>Sesi login app aktif: <b x-text="health.app?.mobileSessions ?? '-'"></b></p>
+                <p>Sesi panel admin aktif: <b x-text="health.app?.adminSessions ?? '-'"></b></p>
+                <p>Perangkat push: <b x-text="Object.values(health.app?.pushDevices || {}).reduce((a, b) => a + b, 0)"></b>
+                  <span class="text-slate-500" x-text="Object.entries(health.app?.pushDevices || {}).map(([k, v]) => k + ' ' + v).join(', ')"></span></p>
+              </div></div>
+            </div>
+            <div class="mt-4 grid gap-4 xl:grid-cols-2">
+              <div class="card p-5"><p class="label">Request sejak start</p>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                  <div><p class="text-2xl font-extrabold" x-text="health.requests.total"></p><p class="text-xs text-slate-500">Total</p></div>
+                  <div><p class="text-2xl font-extrabold text-amber-600" x-text="health.requests.clientErrors"></p><p class="text-xs text-slate-500">Error 4xx</p></div>
+                  <div><p class="text-2xl font-extrabold text-rose-600" x-text="health.requests.serverErrors"></p><p class="text-xs text-slate-500">Error 5xx</p></div>
+                  <div><p class="text-2xl font-extrabold" x-text="health.requests.slow"></p><p class="text-xs text-slate-500">Lambat &gt;2 dtk</p></div>
+                </div>
+                <p class="mt-4 font-bold">Error server terbaru</p>
+                <p class="text-sm text-slate-500" x-show="!health.requests.recentErrors.length">Tidak ada error server sejak start. 👍</p>
+                <template x-for="item in health.requests.recentErrors" :key="item.at + item.path">
+                  <div class="border-b border-slate-100 py-2 text-sm"><p class="font-mono text-xs"><span class="text-slate-500" x-text="formatDate(item.at, true)"></span> <b x-text="item.method"></b> <span x-text="item.path"></span></p><p class="text-rose-700" x-text="item.message"></p></div>
+                </template>
+              </div>
+              <div class="card p-5"><p class="label">Tabel terbesar (perkiraan baris)</p>
+                <table class="w-full"><tbody>
+                  <template x-for="item in health.database.tables || []" :key="item.name"><tr class="border-b border-slate-50"><td class="td font-mono text-xs" x-text="item.name"></td><td class="td text-right" x-text="Number(item.rows).toLocaleString('id-ID')"></td></tr></template>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+        </template>
+      </section>
+
+      <!-- Users -->
+      <section x-show="tab === 'users'">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div><h2 class="text-2xl font-extrabold">Anggota</h2><p class="text-sm text-slate-500"><span x-text="users.meta?.total || 0"></span> akun terdaftar</p></div>
+          <button class="btn btn-primary" @click="openNewUser">+ Tambah akun</button>
+        </div>
+        <div class="card mb-4 flex flex-wrap gap-3 p-3">
+          <input class="input max-w-xs" placeholder="Cari nama, email, HP…" x-model="users.q" @keydown.enter="loadUsers(1)">
+          <select class="input max-w-[11rem]" x-model="users.membershipType" @change="loadUsers(1)">
+            <option value="">Semua membership</option><option value="free">Free</option><option value="membership">Membership</option><option value="sahabat">Sahabat</option>
+          </select>
+          <select class="input max-w-[10rem]" x-model="users.status" @change="loadUsers(1)">
+            <option value="">Semua status</option><option value="active">Aktif</option><option value="suspended">Nonaktif</option>
+          </select>
+          <button class="btn btn-secondary" @click="loadUsers(1)">Cari</button>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[820px]">
+            <thead class="border-b border-slate-100 bg-slate-50"><tr><th class="th">Anggota</th><th class="th">Role</th><th class="th">Membership</th><th class="th">Status</th><th class="th">Bergabung</th><th class="th"></th></tr></thead>
+            <tbody>
+              <template x-for="item in users.items" :key="item.id">
+                <tr class="border-b border-slate-50">
+                  <td class="td">
+                    <div class="flex items-center gap-3">
+                      <template x-if="item.avatar"><img :src="item.avatar" class="h-9 w-9 rounded-full object-cover" alt=""></template>
+                      <template x-if="!item.avatar"><div class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-700" x-text="item.name.charAt(0).toUpperCase()"></div></template>
+                      <div><p class="font-semibold" x-text="item.name"></p><p class="text-xs text-slate-500" x-text="item.email + (item.phone ? ' · ' + item.phone : '')"></p></div>
+                    </div>
+                  </td>
+                  <td class="td">
+                    <select class="input py-1 text-xs" :value="item.role" @change="setRole(item, $event.target.value)" :disabled="item.id === user.id">
+                      <template x-for="(label, code) in roleLabels" :key="code"><option :value="code" x-text="label" :selected="code === item.role"></option></template>
+                    </select>
+                  </td>
+                  <td class="td">
+                    <select class="input py-1 text-xs" :value="item.membershipType" @change="setMembership(item, $event.target.value)">
+                      <option value="free" :selected="item.membershipType === 'free'">Free</option>
+                      <option value="membership" :selected="item.membershipType === 'membership'">Membership</option>
+                      <option value="sahabat" :selected="item.membershipType === 'sahabat'">Sahabat</option>
+                    </select>
+                  </td>
+                  <td class="td"><span class="badge" :class="statusBadges[item.status]" x-text="item.isActive ? 'Aktif' : 'Nonaktif'"></span></td>
+                  <td class="td text-xs" x-text="formatDate(item.joinDate)"></td>
+                  <td class="td text-right"><button class="btn btn-secondary btn-xs" @click="openUser(item)">Detail</button></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p x-show="!users.items.length && !users.loading" class="p-6 text-center text-sm text-slate-400">Tidak ada data.</p>
+        </div>
+        <div class="mt-3 flex items-center justify-end gap-2 text-sm" x-show="users.meta?.lastPage > 1">
+          <button class="btn btn-secondary btn-xs" :disabled="users.page <= 1" @click="loadUsers(users.page - 1)">‹</button>
+          <span x-text="`Hal ${users.page} / ${users.meta?.lastPage}`"></span>
+          <button class="btn btn-secondary btn-xs" :disabled="users.page >= users.meta?.lastPage" @click="loadUsers(users.page + 1)">›</button>
+        </div>
+      </section>
+
+      <!-- Lapak -->
+      <section x-show="tab === 'lapak'">
+        <h2 class="mb-4 text-2xl font-extrabold">Moderasi Lapak</h2>
+        <div class="card mb-4 flex flex-wrap items-center gap-2 p-3">
+          <template x-for="status in ['pending', 'approved', 'rejected', '']" :key="status">
+            <button class="btn btn-xs" :class="lapak.status === status ? 'btn-primary' : 'btn-secondary'" @click="lapak.status = status; loadLapak()"
+                    x-text="({ pending: 'Menunggu', approved: 'Aktif', rejected: 'Ditolak', '': 'Semua' })[status] + (status && lapak.meta?.counts?.[status] ? ` (${lapak.meta.counts[status]})` : '')"></button>
+          </template>
+          <input class="input ml-auto max-w-xs" placeholder="Cari produk/penjual…" x-model="lapak.q" @keydown.enter="loadLapak()">
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <template x-for="item in lapak.items" :key="item.id">
+            <div class="card overflow-hidden">
+              <div class="flex gap-1 overflow-x-auto bg-slate-100">
+                <template x-for="photo in item.photos" :key="photo"><img :src="photo" class="h-36 shrink-0 object-cover" :class="item.photos.length === 1 ? 'w-full' : 'w-36'" alt=""></template>
+              </div>
+              <div class="p-4">
+                <div class="mb-1 flex items-start justify-between gap-2">
+                  <p class="font-bold" x-text="item.name"></p>
+                  <span class="badge" :class="statusBadges[item.status]" x-text="statusLabels[item.status] || item.status"></span>
+                </div>
+                <p class="text-lg font-extrabold text-brand-700" x-text="rupiah(item.price)"></p>
+                <p class="text-xs text-slate-500" x-text="`${categoryLabel(item.category)} · ${item.specs.condition || ''} · ${item.sellerName} (${item.sellerCity || '-'})`"></p>
+                <p class="mt-2 line-clamp-3 text-sm text-slate-600" x-text="item.description"></p>
+                <p x-show="item.rejectionReason" class="mt-2 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700" x-text="'Alasan: ' + item.rejectionReason"></p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button x-show="item.status !== 'approved'" class="btn btn-success btn-xs" @click="moderateProduct(item, 'approve')">Setujui</button>
+                  <button x-show="item.status !== 'rejected'" class="btn btn-secondary btn-xs" @click="moderateProduct(item, 'reject')">Tolak</button>
+                  <a class="btn btn-secondary btn-xs" :href="`https://wa.me/62${item.sellerWhatsapp.slice(1)}`" target="_blank" rel="noopener">WA penjual</a>
+                  <button class="btn btn-danger btn-xs ml-auto" @click="deleteProduct(item)">Hapus</button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <p x-show="!lapak.items.length" class="card p-6 text-center text-sm text-slate-400">Tidak ada produk.</p>
+      </section>
+
+      <!-- Events -->
+      <section x-show="tab === 'events'">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <h2 class="text-2xl font-extrabold">Event</h2>
+          <button class="btn btn-primary" @click="openEventForm()">+ Event baru</button>
+        </div>
+        <div class="card mb-4 flex flex-wrap gap-2 p-3">
+          <template x-for="status in ['', 'published', 'draft', 'cancelled']" :key="status">
+            <button class="btn btn-xs" :class="events.status === status ? 'btn-primary' : 'btn-secondary'" @click="events.status = status; loadEvents()"
+                    x-text="({ '': 'Semua', published: 'Terbit', draft: 'Draft', cancelled: 'Batal' })[status]"></button>
+          </template>
+          <input class="input ml-auto max-w-xs" placeholder="Cari judul/lokasi…" x-model="events.q" @keydown.enter="loadEvents()">
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[860px]">
+            <thead class="border-b border-slate-100 bg-slate-50"><tr><th class="th">Event</th><th class="th">Jadwal</th><th class="th">Kuota</th><th class="th">Status</th><th class="th"></th></tr></thead>
+            <tbody>
+              <template x-for="item in events.items" :key="item.id">
+                <tr class="border-b border-slate-50">
+                  <td class="td"><span class="badge mb-1 bg-brand-50 text-brand-700" x-text="item.type"></span><p class="font-semibold" x-text="item.title"></p><p class="text-xs text-slate-500" x-text="item.location"></p></td>
+                  <td class="td text-xs" x-text="`${formatDate(item.date)} · ${item.time} WIB`"></td>
+                  <td class="td">
+                    <p class="text-xs" x-text="`${item.registered}/${item.quota}`"></p>
+                    <div class="mt-1 h-1.5 w-24 rounded bg-slate-100"><div class="h-1.5 rounded bg-brand-500" :style="`width:${Math.min(100, item.registered / item.quota * 100)}%`"></div></div>
+                  </td>
+                  <td class="td"><span class="badge" :class="statusBadges[item.status]" x-text="statusLabels[item.status] || item.status"></span></td>
+                  <td class="td">
+                    <div class="flex flex-wrap justify-end gap-1">
+                      <button class="btn btn-secondary btn-xs" @click="viewRegistrations(item)">Pendaftar</button>
+                      <button class="btn btn-secondary btn-xs" @click="openEventForm(item)">Edit</button>
+                      <button x-show="item.status !== 'published'" class="btn btn-success btn-xs" @click="setEventStatus(item, 'published')">Terbitkan</button>
+                      <button x-show="item.status === 'published'" class="btn btn-secondary btn-xs" @click="setEventStatus(item, 'cancelled')">Batalkan</button>
+                      <button class="btn btn-danger btn-xs" @click="deleteEvent(item)">Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p x-show="!events.items.length" class="p-6 text-center text-sm text-slate-400" x-text="events.q ? 'Tidak ada event yang cocok dengan pencarian.' : 'Belum ada event.'"></p>
+        </div>
+      </section>
+
+      <!-- Registrations -->
+      <section x-show="tab === 'registrations'">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <h2 class="text-2xl font-extrabold">Registrasi Event</h2>
+          <a class="btn btn-secondary" :href="exportUrl()">⬇ Export CSV</a>
+        </div>
+        <div class="card mb-4 flex flex-wrap gap-3 p-3">
+          <select class="input max-w-sm" x-model="registrations.eventId" @change="loadRegistrations()">
+            <option value="">Semua event</option>
+            <template x-for="event in eventOptions" :key="event.id"><option :value="event.id" x-text="`${event.title} (${event.date})`" :selected="event.id === registrations.eventId"></option></template>
+          </select>
+          <select class="input max-w-[12rem]" x-model="registrations.status" @change="loadRegistrations()">
+            <option value="">Semua status</option><option value="registered">Terdaftar</option><option value="confirmed">Dikonfirmasi</option><option value="cancelled">Dibatalkan</option>
+          </select>
+          <input class="input max-w-xs" placeholder="Cari nama/email/HP…" x-model="registrations.q" @keydown.enter="loadRegistrations()">
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[900px]">
+            <thead class="border-b border-slate-100 bg-slate-50"><tr><th class="th">Pendaftar</th><th class="th">Event</th><th class="th">Korda / Kota</th><th class="th">Catatan</th><th class="th">Status</th><th class="th"></th></tr></thead>
+            <tbody>
+              <template x-for="item in registrations.items" :key="item.id">
+                <tr class="border-b border-slate-50">
+                  <td class="td"><p class="font-semibold" x-text="item.userName"></p><p class="text-xs text-slate-500" x-text="`${item.userEmail} · ${item.userPhone}`"></p></td>
+                  <td class="td text-xs"><p class="font-semibold" x-text="item.event?.title"></p><p x-text="formatDate(item.event?.date)"></p></td>
+                  <td class="td text-xs" x-text="[item.korda && kordaLabel(item.korda), item.userCity].filter(Boolean).join(' · ') || '-'"></td>
+                  <td class="td text-xs" x-text="item.notes || '-'"></td>
+                  <td class="td"><span class="badge" :class="statusBadges[item.status]" x-text="statusLabels[item.status] || item.status"></span><span x-show="item.attended" class="badge ml-1 bg-emerald-50 text-emerald-700">hadir</span></td>
+                  <td class="td">
+                    <div class="flex flex-wrap justify-end gap-1">
+                      <button x-show="item.status === 'registered'" class="btn btn-success btn-xs" @click="updateRegistration(item, { status: 'confirmed' })">Konfirmasi</button>
+                      <button x-show="item.status !== 'cancelled'" class="btn btn-secondary btn-xs" @click="updateRegistration(item, { attended: !item.attended })" x-text="item.attended ? 'Batal hadir' : 'Tandai hadir'"></button>
+                      <button x-show="item.status !== 'cancelled'" class="btn btn-danger btn-xs" @click="cancelRegistration(item)">Batalkan</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p x-show="!registrations.items.length" class="p-6 text-center text-sm text-slate-400">Belum ada pendaftar.</p>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section x-show="tab === 'testimonials'">
+        <h2 class="mb-4 text-2xl font-extrabold">Testimoni</h2>
+        <div class="card mb-4 flex flex-wrap gap-2 p-3">
+          <template x-for="status in ['pending', 'approved', 'rejected', '']" :key="status">
+            <button class="btn btn-xs" :class="testimonials.status === status ? 'btn-primary' : 'btn-secondary'" @click="testimonials.status = status; loadTestimonials()"
+                    x-text="({ pending: 'Menunggu', approved: 'Tampil', rejected: 'Ditolak', '': 'Semua' })[status]"></button>
+          </template>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <template x-for="item in testimonials.items" :key="item.id">
+            <div class="card p-4">
+              <div class="mb-2 flex items-start justify-between gap-2">
+                <div><p class="font-bold" x-text="item.name"></p><p class="text-xs text-slate-500" x-text="`${item.program} · ${item.kordaLabel || '-'} · ${formatDate(item.date)}`"></p></div>
+                <span class="badge" :class="statusBadges[item.status]" x-text="statusLabels[item.status] || item.status"></span>
+              </div>
+              <p class="text-amber-500" x-text="'★'.repeat(item.rating) + '☆'.repeat(5 - item.rating)"></p>
+              <p class="mt-1 text-sm text-slate-600" x-text="item.text"></p>
+              <p x-show="item.rejectionReason" class="mt-2 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700" x-text="'Alasan: ' + item.rejectionReason"></p>
+              <img x-show="item.photo" :src="item.photo" class="mt-2 h-32 rounded-lg object-cover" alt="">
+              <div class="mt-3 flex gap-2">
+                <button x-show="item.status !== 'approved'" class="btn btn-success btn-xs" @click="moderateTestimonial(item, 'approve')">Tampilkan</button>
+                <button x-show="item.status !== 'rejected'" class="btn btn-secondary btn-xs" @click="moderateTestimonial(item, 'reject')">Tolak</button>
+                <button class="btn btn-danger btn-xs ml-auto" @click="deleteTestimonial(item)">Hapus</button>
+              </div>
+            </div>
+          </template>
+        </div>
+        <p x-show="!testimonials.items.length" class="card p-6 text-center text-sm text-slate-400">Tidak ada testimoni.</p>
+      </section>
+
+      <!-- Questions -->
+      <section x-show="tab === 'questions'">
+        <h2 class="mb-4 text-2xl font-extrabold">Tanya Praktisi</h2>
+        <div class="card mb-4 flex gap-2 p-3">
+          <button class="btn btn-xs" :class="questions.answered === '' ? 'btn-primary' : 'btn-secondary'" @click="questions.answered = ''; loadQuestions()">Semua</button>
+          <button class="btn btn-xs" :class="questions.answered === 'false' ? 'btn-primary' : 'btn-secondary'" @click="questions.answered = 'false'; loadQuestions()">Belum dijawab praktisi</button>
+        </div>
+        <div class="flex flex-col gap-3">
+          <template x-for="item in questions.items" :key="item.id">
+            <button class="card p-4 text-left hover:border-brand-500" @click="openQuestion(item)">
+              <div class="mb-1 flex items-center gap-2">
+                <span class="badge bg-brand-50 text-brand-700" x-text="item.category"></span>
+                <span class="badge" :class="statusBadges[item.status]" x-text="statusLabels[item.status] || item.status"></span>
+                <span x-show="item.hasOfficialAnswer" class="badge bg-emerald-100 text-emerald-700">✓ dijawab praktisi</span>
+                <span class="ml-auto text-xs text-slate-400" x-text="formatDate(item.createdAt, true)"></span>
+              </div>
+              <p class="font-bold" x-text="item.title"></p>
+              <p class="line-clamp-2 text-sm text-slate-600" x-text="item.body"></p>
+              <p class="mt-1 text-xs text-slate-500" x-text="`${item.isAnonymous ? 'Hamba Allah' : (item.userName || '-')} · ${item.answersCount} jawaban`"></p>
+            </button>
+          </template>
+        </div>
+        <p x-show="!questions.items.length" class="card p-6 text-center text-sm text-slate-400" x-text="questions.answered === 'false' ? 'Semua pertanyaan sudah dijawab praktisi. 👍' : 'Belum ada pertanyaan.'"></p>
+      </section>
+
+      <!-- Content -->
+      <section x-show="tab === 'content'">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div><h2 class="text-2xl font-extrabold">Konten CMS</h2><p class="text-sm text-slate-500">Data yang tampil di aplikasi (motivasi, doa, korda, program, infaq, dll).</p></div>
+          <button class="btn btn-primary" @click="openContentForm()">+ Tambah</button>
+        </div>
+        <div class="card mb-4 flex flex-wrap gap-3 p-3">
+          <select class="input max-w-xs" x-model="content.key" @change="content.q = ''; loadContent(1)">
+            <template x-for="resource in content.resources" :key="resource.key"><option :value="resource.key" x-text="resource.label" :selected="resource.key === content.key"></option></template>
+          </select>
+          <input class="input max-w-xs" placeholder="Cari…" x-model="content.q" @keydown.enter="loadContent(1)">
+          <span class="ml-auto self-center text-sm text-slate-500" x-text="`${content.meta?.total || 0} item`"></span>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[760px]">
+            <thead class="border-b border-slate-100 bg-slate-50"><tr>
+              <th class="th" x-show="showContentId">Kode</th>
+              <template x-for="field in previewFields()" :key="field.name"><th class="th" x-text="fieldLabel(field.name)"></th></template>
+              <th class="th"></th>
+            </tr></thead>
+            <tbody>
+              <template x-for="item in content.items" :key="item.id">
+                <tr class="border-b border-slate-50">
+                  <td class="td max-w-[10rem] truncate font-mono text-xs" x-show="showContentId" x-text="item.id"></td>
+                  <template x-for="field in previewFields()" :key="field.name"><td class="td" x-text="displayValue(item[field.name])"></td></template>
+                  <td class="td"><div class="flex justify-end gap-1">
+                    <button class="btn btn-secondary btn-xs" @click="openContentForm(item)">Edit</button>
+                    <button x-show="!currentResource?.noDelete" class="btn btn-danger btn-xs" @click="deleteContent(item)">Hapus</button>
+                  </div></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p x-show="!content.items.length" class="p-6 text-center text-sm text-slate-400" x-text="content.q ? 'Tidak ada yang cocok dengan pencarian.' : 'Belum ada data.'"></p>
+        </div>
+        <div class="mt-3 flex items-center justify-end gap-2 text-sm" x-show="content.meta?.lastPage > 1">
+          <button class="btn btn-secondary btn-xs" :disabled="content.page <= 1" @click="loadContent(content.page - 1)">‹</button>
+          <span x-text="`Hal ${content.page} / ${content.meta?.lastPage}`"></span>
+          <button class="btn btn-secondary btn-xs" :disabled="content.page >= content.meta?.lastPage" @click="loadContent(content.page + 1)">›</button>
+        </div>
+      </section>
+
+      <!-- Membership -->
+      <section x-show="tab === 'membership'">
+        <h2 class="mb-1 text-2xl font-extrabold">Membership Plan</h2>
+        <p class="mb-4 text-sm text-slate-500">Fitur yang aktif per plan. Override per anggota tersedia di menu Anggota → Detail. <span x-show="!isSuper" class="font-semibold text-amber-600">Hanya Super Admin yang dapat menyimpan.</span></p>
+        <div class="grid gap-4 lg:grid-cols-3">
+          <template x-for="plan in plans" :key="plan.type">
+            <div class="card p-5">
+              <div class="mb-3 flex items-center gap-2"><span class="h-3 w-3 rounded-full" :style="`background:${plan.color}`"></span><input class="input font-bold" x-model="plan.label" :disabled="!isSuper"></div>
+              <textarea class="input mb-3 text-xs" rows="2" x-model="plan.description" :disabled="!isSuper"></textarea>
+              <template x-for="feature in plan.features" :key="feature.id">
+                <label class="flex items-center justify-between border-b border-slate-50 py-1.5 text-sm">
+                  <span x-text="feature.name"></span>
+                  <input type="checkbox" class="h-4 w-4 accent-brand-700" x-model="feature.enabled" :disabled="!isSuper">
+                </label>
+              </template>
+              <button x-show="isSuper" class="btn btn-primary mt-4 w-full" @click="savePlan(plan)">Simpan</button>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- Broadcast -->
+      <section x-show="tab === 'broadcast'">
+        <h2 class="mb-4 text-2xl font-extrabold">Broadcast Notifikasi</h2>
+        <div class="grid gap-6 lg:grid-cols-2">
+          <form class="card p-5" @submit.prevent="sendBroadcast">
+            <label class="label">Judul</label><input class="input mb-3" x-model="broadcast.title" maxlength="150" required>
+            <label class="label">Isi</label><textarea class="input mb-3" rows="4" x-model="broadcast.body" maxlength="1000" required></textarea>
+            <label class="label">Tipe</label>
+            <select class="input mb-3" x-model="broadcast.type">
+              <template x-for="type in ['info', 'event', 'riyadhoh', 'motivasi', 'lbu', 'lapak', 'tanya']" :key="type"><option :value="type" x-text="type"></option></template>
+            </select>
+            <label class="label">Buka halaman app (opsional)</label><input class="input mb-3" x-model="broadcast.route" placeholder="/event/...">
+            <label class="label">Target membership (kosong = semua)</label>
+            <div class="mb-4 flex gap-4 text-sm">
+              <template x-for="type in ['free', 'membership', 'sahabat']" :key="type">
+                <label class="flex items-center gap-1"><input type="checkbox" :value="type" x-model="broadcast.membershipTypes" class="accent-brand-700"><span x-text="type"></span></label>
+              </template>
+            </div>
+            <button class="btn btn-primary w-full">Kirim</button>
+          </form>
+          <div class="card p-5">
+            <p class="label mb-3">Riwayat</p>
+            <template x-for="item in broadcast.history" :key="item.id">
+              <div class="border-b border-slate-50 py-2">
+                <p class="text-sm font-semibold" x-text="item.title"></p>
+                <p class="text-xs text-slate-500" x-text="`${formatDate(item.createdAt, true)} · ${item.recipients} penerima · oleh ${item.sentBy || '-'}`"></p>
+              </div>
+            </template>
+            <p x-show="!broadcast.history.length" class="text-sm text-slate-400">Belum ada broadcast.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section x-show="tab === 'settings'">
+        <h2 class="mb-1 text-2xl font-extrabold">Pengaturan Aplikasi</h2>
+        <p class="mb-4 text-sm text-slate-500">Ditampilkan di halaman Tentang & cek update aplikasi. <span x-show="!isSuper" class="font-semibold text-amber-600">Hanya Super Admin yang dapat menyimpan.</span></p>
+        <template x-if="siteConfig">
+        <form class="card grid gap-4 p-5 md:grid-cols-2" @submit.prevent="saveSettings">
+          <template x-for="(label, key) in siteContentLabels" :key="key">
+            <div :class="key === 'about_features' && 'md:col-span-2'">
+              <label class="label" x-text="label"></label>
+              <template x-if="key === 'about_features'"><textarea class="input" rows="8" x-model="siteConfig[key]" :disabled="!isSuper"></textarea></template>
+              <template x-if="key !== 'about_features'"><input class="input" x-model="siteConfig[key]" :disabled="!isSuper"></template>
+            </div>
+          </template>
+          <div class="md:col-span-2" x-show="isSuper"><button class="btn btn-primary">Simpan pengaturan</button></div>
+        </form>
+        </template>
+      </section>
+
+      <!-- Audit -->
+      <section x-show="tab === 'audit'">
+        <h2 class="mb-4 text-2xl font-extrabold">Audit Log</h2>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[760px]">
+            <thead class="border-b border-slate-100 bg-slate-50"><tr><th class="th">Waktu</th><th class="th">Aktor</th><th class="th">Aksi</th><th class="th">Target</th><th class="th">Detail</th></tr></thead>
+            <tbody>
+              <template x-for="item in audit.items" :key="item.id">
+                <tr class="border-b border-slate-50">
+                  <td class="td text-xs" x-text="formatDate(item.createdAt, true)"></td>
+                  <td class="td text-xs" x-text="item.actor?.name || '-'"></td>
+                  <td class="td font-mono text-xs" x-text="item.action"></td>
+                  <td class="td font-mono text-xs" x-text="[item.targetType, item.targetId].filter(Boolean).join(':')"></td>
+                  <td class="td max-w-xs truncate font-mono text-xs" x-text="JSON.stringify(item.detail)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 flex items-center justify-end gap-2 text-sm" x-show="audit.meta?.lastPage > 1">
+          <button class="btn btn-secondary btn-xs" :disabled="audit.page <= 1" @click="loadAudit(audit.page - 1)">‹</button>
+          <span x-text="`Hal ${audit.page} / ${audit.meta?.lastPage}`"></span>
+          <button class="btn btn-secondary btn-xs" :disabled="audit.page >= audit.meta?.lastPage" @click="loadAudit(audit.page + 1)">›</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: detail user -->
+  <div x-show="userModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" @click.self="userModal = null" @keydown.escape.window="userModal = null">
+    <div class="card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6" x-show="userModal">
+      <div class="mb-4 flex items-start justify-between">
+        <div><h3 class="text-xl font-extrabold" x-text="userModal?.name"></h3><p class="text-sm text-slate-500" x-text="`${userModal?.email} · ${userModal?.memberNumber || ''}`"></p></div>
+        <button class="btn btn-secondary btn-xs" @click="userModal = null">✕</button>
+      </div>
+      <dl class="mb-5 grid grid-cols-2 gap-3 text-sm">
+        <div><dt class="label">HP</dt><dd x-text="userModal?.phone || '-'"></dd></div>
+        <div><dt class="label">Kota</dt><dd x-text="userModal?.city || '-'"></dd></div>
+        <div><dt class="label">Korda</dt><dd x-text="userModal?.nasuhaRegion || '-'"></dd></div>
+        <div><dt class="label">Pekerjaan</dt><dd x-text="userModal?.occupation || '-'"></dd></div>
+        <div><dt class="label">Angkatan LBU</dt><dd x-text="userModal?.lbuBatch || '-'"></dd></div>
+        <div><dt class="label">Bergabung</dt><dd x-text="formatDate(userModal?.joinDate)"></dd></div>
+      </dl>
+      <p class="label">Akses fitur (plan <span x-text="userModal?.membershipType"></span>)</p>
+      <div class="mb-5 grid grid-cols-1 gap-1 sm:grid-cols-2">
+        <template x-for="feature in planFeatures(userModal?.membershipType)" :key="feature.id">
+          <div class="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-1.5 text-sm">
+            <span><span x-text="feature.name"></span><span x-show="userModal?.featureOverrides?.[feature.id] !== undefined" class="badge ml-1 bg-amber-100 text-amber-700">override</span></span>
+            <div class="flex gap-1">
+              <button class="btn btn-xs" :class="userModal?.membershipFeatures?.[feature.id] ? 'btn-success' : 'btn-secondary'" @click="setFeature(userModal, feature.id, true)">On</button>
+              <button class="btn btn-xs" :class="!userModal?.membershipFeatures?.[feature.id] ? 'btn-danger' : 'btn-secondary'" @click="setFeature(userModal, feature.id, false)">Off</button>
+              <button x-show="userModal?.featureOverrides?.[feature.id] !== undefined" class="btn btn-secondary btn-xs" title="Kembali ke default plan" @click="setFeature(userModal, feature.id, null)">↺</button>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="flex flex-wrap gap-2 border-t border-slate-100 pt-4" x-show="userModal?.id !== user?.id">
+        <button class="btn btn-secondary" @click="toggleActive(userModal)" x-text="userModal?.isActive ? 'Nonaktifkan akun' : 'Aktifkan akun'"></button>
+        <button class="btn btn-secondary" @click="resetPassword(userModal)">Reset password</button>
+        <button x-show="isSuper" class="btn btn-danger ml-auto" @click="deleteUser(userModal)">Hapus akun</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: user baru -->
+  <div x-show="newUser" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" @click.self="newUser = null">
+    <form class="card w-full max-w-md p-6" x-show="newUser" @submit.prevent="createUser">
+      <h3 class="mb-4 text-xl font-extrabold">Tambah akun</h3>
+      <template x-if="newUser && !newUser.result">
+        <div>
+          <label class="label">Nama</label><input class="input mb-3" x-model="newUser.name" required>
+          <label class="label">Email</label><input type="email" class="input mb-3" x-model="newUser.email" required>
+          <label class="label">No. HP</label><input class="input mb-3" x-model="newUser.phone">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="label">Role</label><select class="input" x-model="newUser.role">
+              <template x-for="(label, code) in roleLabels" :key="code"><option :value="code" x-text="label" x-show="isSuper || !['admin','super_admin'].includes(code)"></option></template>
+            </select></div>
+            <div><label class="label">Membership</label><select class="input" x-model="newUser.membershipType"><option value="free">Free</option><option value="membership">Membership</option><option value="sahabat">Sahabat</option></select></div>
+          </div>
+          <div class="mt-5 flex justify-end gap-2"><button type="button" class="btn btn-secondary" @click="newUser = null">Batal</button><button class="btn btn-primary">Buat akun</button></div>
+        </div>
+      </template>
+      <template x-if="newUser?.result">
+        <div>
+          <p class="mb-2 text-sm">Akun dibuat. Berikan password sementara ini ke pengguna (wajib diganti saat login):</p>
+          <p class="mb-4 rounded-lg bg-slate-100 p-3 text-center font-mono text-lg font-bold" x-text="newUser.result"></p>
+          <button type="button" class="btn btn-primary w-full" @click="newUser = null">Selesai</button>
+        </div>
+      </template>
+    </form>
+  </div>
+
+  <!-- Modal: event form -->
+  <div x-show="eventForm" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" @click.self="eventForm = null">
+    <form class="card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6" x-show="eventForm" @submit.prevent="saveEvent">
+      <h3 class="mb-4 text-xl font-extrabold" x-text="eventForm?.id ? 'Edit event' : 'Event baru'"></h3>
+      <template x-if="eventForm">
+        <div class="grid gap-3 md:grid-cols-2">
+          <div class="md:col-span-2"><label class="label">Judul</label><input class="input" x-model="eventForm.title" required></div>
+          <div><label class="label">Tipe</label><select class="input" x-model="eventForm.type">
+            <template x-for="type in references.eventTypes" :key="type.id"><option :value="type.id" x-text="type.label" :selected="type.id === eventForm.type"></option></template>
+          </select></div>
+          <div><label class="label">Status</label><select class="input" x-model="eventForm.status"><option value="draft">Draft</option><option value="published">Terbit</option><option value="cancelled">Batal</option></select></div>
+          <div><label class="label">Tanggal</label><input type="date" class="input" x-model="eventForm.date" required></div>
+          <div><label class="label">Jam (WIB)</label><input type="time" class="input" x-model="eventForm.time" required></div>
+          <div class="md:col-span-2"><label class="label">Lokasi</label><input class="input" x-model="eventForm.location" required></div>
+          <div><label class="label">Kuota</label><input type="number" min="1" class="input" x-model="eventForm.quota" required></div>
+          <div><label class="label">WhatsApp kontak</label><input class="input" x-model="eventForm.contactWhatsapp" placeholder="08…"></div>
+          <div class="md:col-span-2"><label class="label">Deskripsi</label><textarea class="input" rows="4" x-model="eventForm.description"></textarea></div>
+          <div class="md:col-span-2">
+            <label class="label">Gambar</label>
+            <div class="flex items-center gap-3">
+              <img x-show="eventForm.image" :src="eventForm.image" class="h-16 w-24 rounded object-cover" alt="">
+              <input type="file" accept="image/*" class="file-input" @change="uploadTo(eventForm, 'image', 'event', $event.target)">
+              <button type="button" x-show="eventForm.image" class="btn btn-secondary btn-xs" @click="eventForm.image = null">Hapus</button>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div class="mt-5 flex justify-end gap-2"><button type="button" class="btn btn-secondary" @click="eventForm = null">Batal</button><button class="btn btn-primary">Simpan</button></div>
+    </form>
+  </div>
+
+  <!-- Modal: pertanyaan -->
+  <div x-show="questionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" @click.self="questionModal = null" @keydown.escape.window="!dialog && (questionModal = null)">
+    <template x-if="questionModal">
+    <div class="card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+      <div class="mb-2 flex items-center gap-2"><span class="badge bg-brand-50 text-brand-700" x-text="questionModal?.category"></span><span class="text-xs text-slate-500" x-text="`${questionModal?.userName} · ${formatDate(questionModal?.createdAt, true)}`"></span></div>
+      <h3 class="text-xl font-extrabold" x-text="questionModal?.title"></h3>
+      <p class="mt-2 whitespace-pre-line text-sm text-slate-700" x-text="questionModal?.body"></p>
+      <p class="label mt-5">Jawaban</p>
+      <template x-for="answer in questionModal?.answers || []" :key="answer.id">
+        <div class="mb-2 rounded-lg border p-3" :class="answer.isOfficial ? 'border-emerald-200 bg-emerald-50' : 'border-slate-100'">
+          <div class="mb-1 flex items-center gap-2 text-xs"><b x-text="answer.userName"></b><span x-show="answer.isOfficial" class="badge bg-emerald-100 text-emerald-700">Resmi</span><span class="text-slate-400" x-text="formatDate(answer.createdAt, true)"></span>
+            <button class="ml-auto text-rose-600" @click="deleteAnswer(answer)">hapus</button></div>
+          <p class="whitespace-pre-line text-sm" x-text="answer.body"></p>
+        </div>
+      </template>
+      <form @submit.prevent="answerQuestion" class="mt-3">
+        <textarea class="input mb-2" rows="3" placeholder="Tulis jawaban resmi…" x-model="questionModal.reply" required></textarea>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-primary">Kirim jawaban</button>
+          <button type="button" class="btn btn-secondary" @click="setQuestionStatus(questionModal, questionModal.status === 'closed' ? 'open' : 'closed'); questionModal.status = questionModal.status === 'closed' ? 'open' : 'closed'" x-text="questionModal?.status === 'closed' ? 'Buka kembali' : 'Tutup pertanyaan'"></button>
+          <button type="button" class="btn btn-danger ml-auto" @click="deleteQuestion(questionModal)">Hapus pertanyaan</button>
+        </div>
+      </form>
+    </div>
+    </template>
+  </div>
+
+  <!-- Modal: konten -->
+  <div x-show="contentForm" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" @click.self="contentForm = null" @keydown.escape.window="!dialog && (contentForm = null)">
+    <form class="card max-h-[90vh] w-full max-w-3xl overflow-y-auto p-6" x-show="contentForm" @submit.prevent="saveContent">
+      <h3 class="mb-4 text-xl font-extrabold" x-text="`${contentForm?.isNew ? 'Tambah' : 'Edit'} ${currentResource?.label || ''}`"></h3>
+      <template x-if="contentForm">
+        <div class="grid gap-3 md:grid-cols-2">
+          <div x-show="currentResource?.pkType !== 'uuid'" class="md:col-span-2">
+            <label class="label">ID / slug</label>
+            <input class="input font-mono" x-model="contentForm.id" :disabled="!contentForm.isNew" :required="currentResource?.pkType !== 'uuid'" placeholder="contoh: korda-papua">
+          </div>
+          <template x-for="field in currentResource?.fields || []" :key="field.name">
+            <div :class="(['json', 'array'].includes(field.type) || (field.type === 'string' && (field.max || 0) > 300)) && 'md:col-span-2'">
+              <label class="label"><span x-text="fieldLabel(field.name)"></span><span x-show="field.required" class="text-rose-500"> *</span></label>
+              <template x-if="field.type === 'string' && field.enum">
+                <select class="input" x-model="contentForm.values[field.name]" :required="field.required">
+                  <option value="" x-show="!field.required">— Tidak ada —</option>
+                  <template x-for="option in field.enum" :key="option"><option :value="option" x-text="enumLabel(option)" :selected="option === contentForm.values[field.name]"></option></template>
+                </select>
+              </template>
+              <template x-if="field.type === 'string' && !field.enum && (field.max || 0) > 300 && !isLinkField(field)">
+                <textarea class="input" :rows="(field.max || 0) > 5000 ? 12 : 4" x-model="contentForm.values[field.name]" :required="field.required"></textarea>
+              </template>
+              <template x-if="field.type === 'string' && !field.enum && ((field.max || 0) <= 300 || isLinkField(field))">
+                <input class="input" :type="isLinkField(field) && field.name === 'url' ? 'url' : 'text'" x-model="contentForm.values[field.name]" :maxlength="field.max" :required="field.required" :placeholder="field.name === 'url' ? 'https://…' : ''">
+              </template>
+              <template x-if="field.type === 'int'"><input type="number" class="input" x-model="contentForm.values[field.name]"></template>
+              <template x-if="field.type === 'bool'"><label class="flex items-center gap-2 text-sm"><input type="checkbox" class="h-4 w-4 accent-brand-700" x-model="contentForm.values[field.name]"> Ya</label></template>
+              <template x-if="field.type === 'array'"><input class="input" x-model="contentForm.values[field.name]" placeholder="pisahkan dengan koma"></template>
+              <template x-if="field.type === 'json'"><textarea class="input font-mono text-xs" rows="10" x-model="contentForm.values[field.name]"></textarea></template>
+              <template x-if="field.type === 'timestamp'"><input type="datetime-local" class="input" x-model="contentForm.values[field.name]"></template>
+              <template x-if="field.type === 'file'">
+                <div class="flex items-center gap-3">
+                  <img x-show="contentForm.values[field.name]" :src="contentForm.values[field.name]" class="h-14 w-14 rounded object-cover" alt="">
+                  <input type="file" accept="image/*" class="file-input" @change="uploadTo(contentForm.values, field.name, 'content', $event.target)">
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+      <div class="mt-5 flex justify-end gap-2"><button type="button" class="btn btn-secondary" @click="contentForm = null">Batal</button><button class="btn btn-primary">Simpan</button></div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

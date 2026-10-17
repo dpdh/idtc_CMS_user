@@ -1,0 +1,28 @@
+{
+  "name": "idtc-member-portal",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "admin:reset-password": "node scripts/reset-super-admin-password.js",
+    "admin:configure-reset-token": "node scripts/configure-super-admin-reset-token.js",
+    "db:setup": "psql -U postgres -f database.sql"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "file-type": "^21.0.0",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "pngjs": "^5.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

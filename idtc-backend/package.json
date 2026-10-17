@@ -1,0 +1,39 @@
+{
+  "name": "idtc-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend API & CMS admin untuk aplikasi mobile IDTC (IDTC)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build:css": "tailwindcss -i ./admin/admin.input.css -o ./admin/admin.css --minify",
+    "watch:css": "tailwindcss -i ./admin/admin.input.css -o ./admin/admin.css --watch",
+    "db:setup": "psql -U postgres -f database.sql",
+    "db:seed": "node scripts/seed.js",
+    "seed:extract": "node scripts/extract-app-content.js",
+    "admin:reset-password": "node scripts/reset-super-admin-password.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "dependencies": {
+    "alpinejs": "^3.17.4",
+    "bcryptjs": "^3.0.3",
+    "chart.js": "4.5.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "file-type": "^22.1.1",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.12",
+    "multer": "^2.4.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

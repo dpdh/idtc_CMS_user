@@ -1,0 +1,26 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build / cache
+.history/
+.DS_Store
+Thumbs.db
+*.log
+server.out.log
+server.err.log
+server-run.log
+
+# Uploads (data pengguna, jangan di-commit)
+uploads/
+
+# Editor
+.vscode/
+
+# File sampah
+ERR
+~$*

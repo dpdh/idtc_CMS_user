@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eaf4ff" />
+    <title>Verifikasi Anggota | IDTC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/verify.css" />
+  </head>
+  <body>
+    <main class="verify-shell">
+      <section class="verify-panel">
+        <header class="verify-brand">
+          <span class="brand-mark"><img src="/assets/img/IDTC_logo.png" alt="" /></span>
+          <span>INDONESIA DIGITAL TWIN COMMUNITY</span>
+        </header>
+        <div class="verify-content" id="verify-content" aria-live="polite">
+          <span class="verify-symbol loading" id="verify-symbol" aria-hidden="true">ID</span>
+          <p class="eyebrow">VERIFIKASI KEANGGOTAAN</p>
+          <h1 id="verify-heading">Memeriksa kartu...</h1>
+          <p class="verify-description" id="verify-description">Menghubungi direktori resmi IDTC.</p>
+          <div class="member-data" id="member-data" hidden>
+            <div><span>Nama anggota</span><strong id="member-name"></strong></div>
+            <div><span>Nomor anggota</span><strong id="member-number"></strong></div>
+            <div><span>Instansi</span><strong id="member-organization"></strong></div>
+            <div><span>Status</span><strong id="member-status"></strong></div>
+            <div><span>Terdaftar sejak</span><strong id="member-since"></strong></div>
+          </div>
+        </div>
+        <footer class="verify-footer"><span>Direktori resmi anggota IDTC</span><span>© 2026 IDTC</span></footer>
+      </section>
+    </main>
+    <script src="/verify.js"></script>
+  </body>
+</html>

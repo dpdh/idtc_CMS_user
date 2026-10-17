@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar Anggota IDTC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <style>
+    :root {
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --brand-soft: #ccfbf1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 45%, #fef9ec 100%);
+      color: #1e293b;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1rem;
+      background: var(--brand);
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 800;
+    }
+    h1 { margin: 0 0 4px; text-align: center; font-size: 22px; font-weight: 800; }
+    .subtitle { margin: 0 0 24px; text-align: center; font-size: 13px; color: #64748b; }
+    label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; color: #334155; }
+    label .optional { font-weight: 400; color: #94a3b8; }
+    input {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font: inherit;
+      font-size: 14px;
+      background: #f8fafc;
+    }
+    input:focus { outline: 2px solid var(--brand); outline-offset: 1px; background: #ffffff; }
+    input.invalid { border-color: #e11d48; background: #fff1f2; }
+    .error-box {
+      display: none;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 0.5rem;
+      background: #fff1f2;
+      color: #be123c;
+      font-size: 13px;
+    }
+    .success-box { display: none; text-align: center; }
+    .check {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+      font-size: 28px;
+    }
+    .detail {
+      margin: 16px 0;
+      padding: 12px;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      text-align: left;
+    }
+    .detail p { margin: 4px 0; }
+    .detail b { color: #0f172a; }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 0.5rem;
+      background: var(--brand);
+      color: #ffffff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: var(--brand-dark); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .links { margin-top: 20px; text-align: center; font-size: 13px; color: #64748b; }
+    .links a { color: var(--brand); font-weight: 600; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    .hint { margin: -12px 0 16px; font-size: 12px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <!-- Formulir pendaftaran -->
+    <div id="form-panel">
+      <div class="logo" aria-hidden="true">I</div>
+      <h1>Daftar Anggota IDTC</h1>
+      <p class="subtitle">Buat akun Calon Sahabat IDTC untuk mengakses aplikasi IDTC</p>
+
+      <div id="error-box" class="error-box" role="alert"></div>
+
+      <form id="register-form" novalidate>
+        <label for="name">Nama lengkap</label>
+        <input id="name" name="name" type="text" autocomplete="name" maxlength="150" required>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
+
+        <label for="phone">No. HP <span class="optional">(opsional)</span></label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="08xxxxxxxxxx">
+
+        <label for="password">Kata sandi</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="6" required>
+        <p class="hint">Minimal 6 karakter.</p>
+
+        <label for="password-confirmation">Konfirmasi kata sandi</label>
+        <input id="password-confirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="6" required>
+
+        <button id="submit-button" type="submit">Daftar sekarang</button>
+      </form>
+
+      <p class="links">Sudah punya akun? Masuk melalui aplikasi IDTC.<br>Pengurus? <a href="/admin">Masuk panel admin</a></p>
+    </div>
+
+    <!-- Keberhasilan -->
+    <div id="success-panel" class="success-box">
+      <div class="check" aria-hidden="true">✓</div>
+      <h1>Pendaftaran berhasil</h1>
+      <p class="subtitle">Akun Calon Sahabat IDTC Anda sudah aktif.</p>
+      <div class="detail">
+        <p>Nama: <b id="success-name"></b></p>
+        <p>Email: <b id="success-email"></b></p>
+        <p>Nomor anggota: <b id="success-number"></b></p>
+      </div>
+      <p class="subtitle">Gunakan email dan kata sandi tadi untuk masuk ke aplikasi IDTC.</p>
+      <p class="links"><a href="/admin">Masuk panel admin</a></p>
+    </div>
+  </main>
+
+  <script defer src="/register/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eaf4ff" />
+    <title>Admin Anggota | IDTC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <header class="admin-topbar">
+      <a class="brand" href="/" aria-label="IDTC Portal">
+        <span class="brand-mark"><img src="/assets/img/IDTC_logo.png" alt="" /></span>
+        <span class="brand-name">IDTC <small>ADMIN</small></span>
+      </a>
+      <span class="topbar-community">Indonesia Digital Twin Community</span>
+      <button class="sign-out" id="logout-button" type="button" hidden>Keluar</button>
+    </header>
+
+    <main class="admin-main">
+      <section class="login-view glass-panel" id="login-view">
+        <p class="eyebrow">AREA TERBATAS</p>
+        <h1>Masuk admin</h1>
+        <p class="login-description">Gunakan akun administrator IDTC untuk mengelola anggota.</p>
+        <form id="admin-login-form">
+          <label for="admin-email">Email admin</label>
+          <input id="admin-email" name="email" type="email" autocomplete="username" required />
+          <label for="admin-password">Password</label>
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+          <button class="primary-button" type="submit">Masuk ke CMS</button>
+        </form>
+        <p class="notice" id="login-notice" role="status" aria-live="polite"></p>
+        <button class="reset-account-button" id="show-password-reset" type="button">Reset password Super Admin</button>
+        <form class="password-reset-form" id="admin-password-reset-form" hidden>
+          <p class="reset-description">Reset akun Super Admin <strong>dani.hd@idtc.org</strong>. Token reset harus tersedia di environment server.</p>
+          <label for="reset-token">Token reset</label>
+          <input id="reset-token" name="resetToken" type="password" autocomplete="off" required />
+          <label for="reset-new-password">Password baru</label>
+          <input id="reset-new-password" name="newPassword" type="password" minlength="12" maxlength="72" autocomplete="new-password" required />
+          <label for="reset-password-confirm">Ulangi password baru</label>
+          <input id="reset-password-confirm" name="passwordConfirm" type="password" minlength="12" maxlength="72" autocomplete="new-password" required />
+          <div class="password-reset-actions">
+            <button class="secondary-button" id="cancel-password-reset" type="button">Kembali ke login</button>
+            <button class="primary-button" type="submit">Reset password</button>
+          </div>
+          <p class="notice" id="reset-notice" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="dashboard" id="dashboard-view" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">PENGELOLAAN KOMUNITAS</p>
+            <h1>Manajemen anggota</h1>
+            <p class="dashboard-subtitle">Tinjau pendaftaran dan kelola status keanggotaan IDTC.</p>
+          </div>
+          <div class="page-actions">
+            <p class="admin-identity" id="admin-identity"></p>
+            <button class="secondary-button" id="view-members" type="button">Lihat semua anggota</button>
+            <button class="primary-button" id="add-member" type="button">Tambah anggota</button>
+          </div>
+        </div>
+
+        <nav class="admin-tabs" id="admin-tabs" role="tablist" aria-label="Area administrasi">
+          <button class="is-selected" data-admin-view="members" type="button" role="tab" aria-selected="true">Keanggotaan</button>
+          <button data-admin-view="accounts" id="accounts-tab" type="button" role="tab" aria-selected="false" hidden>User Management</button>
+          <button data-admin-view="content" id="content-tab" type="button" role="tab" aria-selected="false" hidden>Content Management</button>
+        </nav>
+
+        <p class="notice dashboard-notice" id="dashboard-notice" role="status" aria-live="polite"></p>
+
+        <section class="metrics" data-admin-panel="members" aria-label="Ringkasan anggota">
+          <div class="metric"><span>Total pengguna</span><strong id="count-total">0</strong></div>
+          <div class="metric metric-pending"><span>Menunggu</span><strong id="count-pending">0</strong></div>
+          <div class="metric metric-active"><span>Aktif</span><strong id="count-active">0</strong></div>
+          <div class="metric metric-suspended"><span>Ditangguhkan</span><strong id="count-suspended">0</strong></div>
+        </section>
+
+        <section class="member-management" data-admin-panel="members" aria-label="Daftar pengguna">
+          <div class="section-heading">
+            <div>
+              <h2>Daftar pengguna</h2>
+              <p id="results-summary">Memuat data...</p>
+            </div>
+            <form class="filters" id="filter-form">
+              <label class="search-label" for="search-users">Cari anggota</label>
+              <input id="search-users" name="q" type="search" placeholder="Nama, email, instansi" />
+              <label class="visually-hidden" for="status-filter">Filter status</label>
+              <select id="status-filter" name="status">
+                <option value="pending">Menunggu</option>
+                <option value="active">Aktif</option>
+                <option value="suspended">Ditangguhkan</option>
+                <option value="all">Semua status</option>
+              </select>
+              <button class="secondary-button" type="submit">Terapkan</button>
+            </form>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Anggota</th><th>Instansi</th><th>Foto ID</th><th>Status</th><th>Tanggal daftar</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="users-table-body"></tbody>
+            </table>
+            <div class="empty-state" id="empty-state" hidden>Tidak ada pengguna yang cocok dengan filter ini.</div>
+          </div>
+          <div class="pagination">
+            <span id="page-label">Halaman 1</span>
+            <div class="pagination-actions">
+              <button class="secondary-button" id="previous-page" type="button" disabled>Sebelumnya</button>
+              <button class="secondary-button" id="next-page" type="button" disabled>Berikutnya</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="management-panel" id="accounts-panel" data-admin-panel="accounts" aria-labelledby="accounts-title" hidden>
+          <div class="section-heading">
+            <div><h2 id="accounts-title">User Management</h2><p>Kelola akses akun dan role aplikasi.</p></div>
+            <form class="filters" id="account-search-form">
+              <label class="search-label" for="account-search">Cari pengguna</label>
+              <input id="account-search" name="q" type="search" placeholder="Nama atau email" />
+              <button class="secondary-button" type="submit">Cari</button>
+            </form>
+          </div>
+          <div class="table-scroll">
+            <table class="account-table">
+              <thead><tr><th>Pengguna</th><th>Status</th><th>Role saat ini</th><th>Ubah role</th><th>Aksi</th></tr></thead>
+              <tbody id="accounts-table-body"></tbody>
+            </table>
+            <div class="empty-state" id="accounts-empty-state" hidden>Tidak ada akun yang cocok.</div>
+          </div>
+        </section>
+
+        <section class="management-panel" id="content-panel" data-admin-panel="content" aria-labelledby="content-title" hidden>
+          <div class="section-heading"><div><h2 id="content-title">Content Management</h2><p>Kelola teks portal anggota yang tampil di halaman utama.</p></div></div>
+          <form class="content-form" id="content-form">
+            <div class="content-field"><label for="content-welcome-prefix">Judul utama</label><input id="content-welcome-prefix" name="welcome_headline_prefix" maxlength="180" required /></div>
+            <div class="content-field"><label for="content-welcome-emphasis">Penekanan judul</label><input id="content-welcome-emphasis" name="welcome_headline_emphasis" maxlength="180" required /></div>
+            <div class="content-field content-field-wide"><label for="content-welcome-description">Deskripsi utama</label><textarea id="content-welcome-description" name="welcome_description" maxlength="1000" rows="3" required></textarea></div>
+            <div class="content-field"><label for="content-login-heading">Judul masuk</label><input id="content-login-heading" name="login_heading" maxlength="180" required /></div>
+            <div class="content-field"><label for="content-login-description">Deskripsi masuk</label><textarea id="content-login-description" name="login_description" maxlength="1000" rows="3" required></textarea></div>
+            <div class="content-field"><label for="content-register-heading">Judul pendaftaran</label><input id="content-register-heading" name="register_heading" maxlength="180" required /></div>
+            <div class="content-field"><label for="content-register-description">Deskripsi pendaftaran</label><textarea id="content-register-description" name="register_description" maxlength="1000" rows="3" required></textarea></div>
+            <p class="form-error" id="content-error" role="alert"></p>
+            <div class="content-form-actions"><button class="primary-button" type="submit">Simpan konten</button></div>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="photo-dialog" id="photo-dialog" aria-labelledby="photo-dialog-title">
+      <div class="dialog-heading">
+        <h2 id="photo-dialog-title">Foto anggota</h2>
+        <button class="close-dialog" id="close-photo" type="button" aria-label="Tutup foto">Tutup</button>
+      </div>
+      <img id="member-photo-preview" alt="Foto anggota IDTC" />
+    </dialog>
+    <dialog class="kta-dialog" id="kta-dialog" aria-labelledby="kta-dialog-title">
+      <div class="dialog-heading kta-dialog-heading">
+        <div><p class="eyebrow">KARTU DIGITAL</p><h2 id="kta-dialog-title">Kartu Tanda Anggota</h2></div>
+        <button class="close-dialog" id="close-kta" type="button" aria-label="Tutup pratinjau KTA">Tutup</button>
+      </div>
+      <div class="kta-face-toggle" role="group" aria-label="Pilih sisi kartu">
+        <button class="is-selected" data-kta-face="front" type="button" aria-pressed="true">Depan</button>
+        <button data-kta-face="back" type="button" aria-pressed="false">Belakang</button>
+      </div>
+      <div class="kta-card-stack">
+        <article class="kta-card kta-card-front" id="kta-card" aria-label="Bagian depan Kartu Tanda Anggota IDTC">
+          <img class="kta-template-image" src="/assets/img/Id_f_01.png" alt="" />
+          <div class="kta-front-photo"><img id="kta-photo" alt="Foto anggota" hidden /><span id="kta-initials" hidden></span></div>
+          <div class="kta-front-overlay">
+            <div class="kta-front-details">
+              <strong id="kta-name"></strong>
+              <span>ANGGOTA IDTC</span>
+              <small id="kta-organization"></small>
+              <b id="kta-number"></b>
+            </div>
+          </div>
+        </article>
+        <article class="kta-card kta-card-back" id="kta-card-back" aria-label="Bagian belakang Kartu Tanda Anggota IDTC" hidden>
+          <img class="kta-template-image" src="/assets/img/id_b_02.png" alt="" />
+          <div class="kta-back-overlay">
+            <div class="kta-back-qr">
+              <img id="kta-qr" alt="QR Code verifikasi keanggotaan" hidden />
+              <span class="kta-back-number" id="kta-back-number"></span>
+              <small id="kta-qr-status">Memuat QR...</small>
+              <span>SCAN UNTUK VERIFIKASI</span>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="kta-actions">
+        <p>Depan dan belakang dicetak pada halaman terpisah.</p>
+        <div><button class="secondary-button" id="close-kta-footer" type="button">Tutup</button><button class="secondary-button" id="download-kta-qr" type="button" disabled>Unduh QR</button><button class="primary-button" id="print-kta" type="button">Cetak dua sisi</button></div>
+      </div>
+    </dialog>
+    <dialog class="confirmation-dialog" id="approval-dialog" aria-labelledby="approval-title">
+      <div class="approval-mark" aria-hidden="true">OK</div>
+      <p class="eyebrow">STATUS ANGGOTA DIPERBARUI</p>
+      <h2 id="approval-title">Pendaftaran disetujui</h2>
+      <p class="approval-copy"><strong id="approved-member-name"></strong> sekarang terdaftar sebagai anggota aktif IDTC.</p>
+      <p class="approval-number" id="approved-member-number"></p>
+      <div class="approval-actions">
+        <button class="secondary-button" id="approval-close" type="button">Selesai</button>
+        <button class="secondary-button" id="approval-kta" type="button">Cetak KTA</button>
+        <button class="primary-button" id="approval-certificate" type="button">Cetak sertifikat</button>
+      </div>
+    </dialog>
+    <dialog class="certificate-dialog" id="certificate-dialog" aria-labelledby="certificate-dialog-title">
+      <div class="dialog-heading certificate-dialog-heading">
+        <div><p class="eyebrow">DOKUMEN KEANGGOTAAN</p><h2 id="certificate-dialog-title">Sertifikat anggota</h2></div>
+        <button class="close-dialog" id="close-certificate" type="button" aria-label="Tutup pratinjau sertifikat">Tutup</button>
+      </div>
+      <article class="member-certificate" id="member-certificate" aria-label="Sertifikat keanggotaan IDTC">
+        <div class="certificate-frame">
+          <header class="certificate-header">
+            <span class="certificate-logo"><img src="/assets/img/IDTC_logo.png" alt="" /></span>
+            <p>INDONESIA DIGITAL TWIN COMMUNITY</p>
+          </header>
+          <p class="certificate-eyebrow">SERTIFIKAT KEANGGOTAAN</p>
+          <h3>SERTIFIKAT ANGGOTA</h3>
+          <p class="certificate-intro">Dengan ini menyatakan bahwa</p>
+          <p class="certificate-name" id="certificate-member-name"></p>
+          <p class="certificate-number" id="certificate-member-number"></p>
+          <p class="certificate-description">telah disetujui sebagai anggota aktif Indonesia Digital Twin Community.</p>
+          <p class="certificate-organization" id="certificate-organization"></p>
+          <footer class="certificate-footer">
+            <p id="certificate-date"></p>
+            <div class="chair-signature">
+              <div class="signature-space" aria-label="Ruang tanda tangan Ketua IDTC"></div>
+              <strong>Ketua IDTC</strong>
+            </div>
+          </footer>
+        </div>
+      </article>
+      <div class="certificate-actions">
+        <p>Sertifikat perlu ditandatangani Ketua IDTC sebelum dibagikan.</p>
+        <div><button class="secondary-button" id="certificate-close-footer" type="button">Tutup</button><button class="primary-button" id="print-certificate" type="button">Cetak sertifikat</button></div>
+      </div>
+    </dialog>
+    <dialog class="member-form-dialog" id="member-form-dialog" aria-labelledby="member-form-title">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">DATA KEANGGOTAAN</p><h2 id="member-form-title">Tambah anggota</h2></div>
+        <button class="close-dialog" id="close-member-form" type="button" aria-label="Tutup formulir anggota">Tutup</button>
+      </div>
+      <form class="member-form" id="member-form" enctype="multipart/form-data">
+        <label for="member-full-name">Nama lengkap</label>
+        <input id="member-full-name" name="fullName" type="text" maxlength="150" required />
+        <label for="member-email">Email</label>
+        <input id="member-email" name="email" type="email" maxlength="254" required />
+        <label for="member-organization">Instansi atau komunitas</label>
+        <input id="member-organization" name="organization" type="text" maxlength="180" />
+        <label for="member-profession">Profesi atau jabatan</label>
+        <input id="member-profession" name="profession" type="text" maxlength="180" />
+        <div id="initial-password-field">
+          <label id="member-password-label" for="member-password">Password awal anggota</label>
+          <input id="member-password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" />
+          <p class="upload-hint" id="member-password-hint" hidden>Kosongkan bila password tidak ingin diubah. Mengubah password akan mengakhiri sesi anggota.</p>
+        </div>
+        <div id="initial-status-field">
+          <label for="member-initial-status">Status awal</label>
+          <select id="member-initial-status" name="status"><option value="pending">Menunggu</option><option value="active">Aktif</option></select>
+        </div>
+        <label for="member-photo-upload">Foto anggota <span class="optional-label">(opsional)</span></label>
+        <input id="member-photo-upload" name="memberPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+        <p class="upload-hint">JPG, PNG, atau WEBP. Maksimal 5 MB.</p>
+        <p class="form-error" id="member-form-error" role="alert"></p>
+        <div class="member-form-actions">
+          <button class="secondary-button" id="cancel-member-form" type="button">Batal</button>
+          <button class="primary-button" id="save-member" type="submit">Simpan anggota</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog class="delete-dialog" id="delete-dialog" aria-labelledby="delete-title">
+      <p class="eyebrow">KONFIRMASI PENGHAPUSAN</p>
+      <h2 id="delete-title">Hapus data anggota?</h2>
+      <p class="delete-copy">Data <strong id="delete-member-name"></strong>, termasuk foto dan sesi terkait, akan dihapus permanen.</p>
+      <p class="form-error" id="delete-error" role="alert"></p>
+      <div class="delete-actions"><button class="secondary-button" id="cancel-delete" type="button">Batal</button><button class="danger-button" id="confirm-delete" type="button">Hapus anggota</button></div>
+    </dialog>
+    <script src="admin.js"></script>
+  </body>
+</html>

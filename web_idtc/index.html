@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eaf4ff" />
+    <title>Masuk | IDTC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="brand-panel" aria-label="Tentang IDTC">
+        <div class="brand-mark"><img src="/assets/img/IDTC_logo.png" alt="Logo IDTC" /></div>
+        <div class="brand-copy">
+          <p class="eyebrow">Indonesia Digital Twin Community</p>
+          <h1><span data-content-key="welcome_headline_prefix">Bangun masa depan,</span><br /><em data-content-key="welcome_headline_emphasis">bersama IDTC.</em></h1>
+          <p class="brand-description" data-content-key="welcome_description">Ruang kolaborasi para praktisi, akademisi, dan inovator untuk memajukan ekosistem digital twin di Indonesia.</p>
+        </div>
+        <div class="id-card-scene" aria-hidden="true">
+          <div class="id-card" id="id-card">
+            <div class="id-card-glow"></div>
+            <div class="id-card-frame"></div>
+            <div class="id-card-top">
+              <div class="id-card-brand">
+                <img src="/assets/img/IDTC_logo.png" alt="" />
+                <span>IDTC<small>INDONESIA DIGITAL TWIN COMMUNITY</small></span>
+              </div>
+              <div class="id-card-index"><span>DIGITAL ID</span><strong>03</strong></div>
+            </div>
+            <div class="id-card-scan"></div>
+            <div class="id-card-identity">
+              <span class="id-card-label">MEMBERSHIP NETWORK</span>
+              <strong>COMMUNITY<br /><em>MEMBER</em></strong>
+              <span class="id-card-caption">Kolaborasi untuk masa depan digital Indonesia.</span>
+            </div>
+            <div class="id-card-bottom">
+              <span>IDTC&nbsp; / &nbsp;2026</span>
+              <span class="id-card-bottom-line"></span>
+              <span>CONNECTED BY INNOVATION</span>
+            </div>
+          </div>
+        </div>
+        <div class="brand-footer"><span class="status-dot"></span><span>Semua sistem berjalan normal</span><span class="footer-year">© 2026 IDTC</span></div>
+      </section>
+      <section class="form-panel">
+        <div class="form-wrap">
+          <div id="auth-view">
+          <div class="mobile-brand"><div class="brand-mark"><img src="/assets/img/IDTC_logo.png" alt="Logo IDTC" /></div></div>
+          <div class="form-heading login-heading"><p class="eyebrow">Portal anggota IDTC</p><h2 data-content-key="login_heading">Masuk ke akun Anda</h2><p data-content-key="login_description">Lanjutkan kolaborasi dan aktivitas komunitas.</p></div>
+          <div class="form-heading register-heading" hidden><p class="eyebrow">Bergabung dengan komunitas</p><h2 data-content-key="register_heading">Daftar anggota IDTC</h2><p data-content-key="register_description">Lengkapi data berikut untuk memulai keanggotaan Anda.</p></div>
+          <form id="login-form" novalidate>
+            <div class="field-group register-only" hidden><label for="full-name">Nama lengkap</label><input id="full-name" name="fullName" type="text" autocomplete="name" placeholder="Nama sesuai identitas" /><span class="field-error" id="full-name-error"></span></div>
+            <div class="field-group register-only" hidden><label for="organization">Instansi atau komunitas</label><input id="organization" name="organization" type="text" autocomplete="organization" placeholder="Nama instansi (opsional)" /><span class="field-error" id="organization-error"></span></div>
+            <div class="field-group register-only" hidden><label for="profession">Profesi atau jabatan</label><input id="profession" name="profession" type="text" autocomplete="organization-title" maxlength="180" placeholder="Contoh: GIS Specialist (opsional)" /><span class="field-error" id="profession-error"></span></div>
+            <div class="field-group register-only" hidden>
+              <label for="member-photo">Foto untuk kartu anggota IDTC</label>
+              <input id="member-photo" name="memberPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" />
+              <label class="photo-picker" for="member-photo">
+                <span class="photo-picker-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+                <span class="photo-picker-copy"><strong>Pilih foto</strong><small>JPG, PNG, atau WEBP · Maks. 5 MB</small></span>
+                <img id="photo-preview" alt="Pratinjau foto kartu anggota" hidden />
+              </label>
+              <span class="photo-file" id="photo-file" aria-live="polite"></span>
+              <span class="field-error" id="photo-error"></span>
+            </div>
+            <div class="field-group"><label for="email">Alamat email</label><input id="email" name="email" type="email" autocomplete="email" placeholder="nama@institusi.id" required /><span class="field-error" id="email-error"></span></div>
+            <div class="field-group"><div class="label-row"><label for="password">Kata sandi</label><a class="forgot-link" href="#forgot">Lupa kata sandi?</a></div><div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Masukkan kata sandi" required minlength="8" maxlength="72" /><button class="password-toggle" type="button" aria-label="Tampilkan kata sandi" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"/><circle cx="12" cy="12" r="2.5"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.3A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3.1 3.4M6.2 6.8C3.8 8.4 2.5 12 2.5 12s3.5 6 9.5 6c1.1 0 2.1-.2 3-.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div><span class="field-error" id="password-error"></span></div>
+            <div class="field-group register-only" hidden><label for="password-confirm">Konfirmasi kata sandi</label><div class="password-field"><input id="password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" placeholder="Ulangi kata sandi" /><button class="password-toggle" type="button" aria-label="Tampilkan kata sandi" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"/><circle cx="12" cy="12" r="2.5"/></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.3A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3.1 3.4M6.2 6.8C3.8 8.4 2.5 12 2.5 12s3.5 6 9.5 6c1.1 0 2.1-.2 3-.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div><span class="field-error" id="password-confirm-error"></span></div>
+            <label class="remember login-only"><input type="checkbox" name="remember" /><span class="checkmark"></span><span>Ingat saya di perangkat ini</span></label>
+            <button class="submit-button" type="submit"><span>Masuk ke portal anggota</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+            <p class="form-message" role="status" aria-live="polite"></p>
+          </form>
+          <div class="social-login login-only" aria-label="Pilihan login sosial">
+            <div class="social-divider"><span>atau masuk dengan</span></div>
+            <div class="social-buttons">
+              <button class="social-button" type="button" data-provider="google" disabled><span class="social-icon google-icon" aria-hidden="true">G</span><span>Google</span></button>
+              <button class="social-button" type="button" data-provider="facebook" disabled><span class="social-icon facebook-icon" aria-hidden="true">f</span><span>Facebook</span></button>
+              <button class="social-button" type="button" data-provider="instagram" disabled><span class="social-icon instagram-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1"/></svg></span><span>Instagram</span></button>
+              <button class="social-button" type="button" data-provider="apple" disabled><span class="social-icon apple-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.7 12.7c0-2 1.6-3 1.7-3.1a3.7 3.7 0 0 0-2.9-1.6c-1.2-.1-2.4.7-3 .7s-1.5-.7-2.5-.7a3.8 3.8 0 0 0-3.2 2c-1.4 2.4-.4 6 1 8 .7 1 1.4 2 2.4 2s1.3-.6 2.5-.6 1.6.6 2.6.6 1.7-1 2.3-2a8.6 8.6 0 0 0 1-2.1 3.4 3.4 0 0 1-2-3.2ZM14.8 6.8a3.5 3.5 0 0 0 .8-2.5 3.7 3.7 0 0 0-2.4 1.2 3.3 3.3 0 0 0-.8 2.4 3.1 3.1 0 0 0 2.4-1.1Z"/></svg></span><span>Apple</span></button>
+            </div>
+            <p class="social-note">Login sosial aktif setelah pengelola mengonfigurasi provider dan Anda menautkan akun ke IDTC.</p>
+            <p class="social-instagram-note">Login Instagram tersedia untuk akun profesional (Business/Creator).</p>
+          </div>
+          <p class="signup-prompt login-only">Belum menjadi anggota? <a href="#register" data-mode="register">Daftar anggota IDTC</a></p>
+          <p class="signup-prompt register-only" hidden>Sudah menjadi anggota? <a href="#login" data-mode="login">Masuk ke akun</a></p>
+          <p class="legal">Dengan melanjutkan, Anda menyetujui <a href="#terms">Ketentuan Layanan</a> dan <a href="#privacy">Kebijakan Privasi</a> IDTC.</p>
+          </div>
+          <section id="account-view" class="dashboard-view" hidden aria-live="polite">
+            <header class="dashboard-header">
+              <a class="dashboard-brand" href="/" aria-label="IDTC Portal">
+                <img src="/assets/img/IDTC_logo.png" alt="" />
+                <span>IDTC<small>PORTAL ANGGOTA</small></span>
+              </a>
+              <button class="dashboard-logout" id="logout-button" type="button">Keluar</button>
+            </header>
+            <div class="dashboard-layout">
+              <nav class="dashboard-nav" aria-label="Navigasi dashboard">
+                <p class="dashboard-nav-label">MENU</p>
+                <button class="dashboard-nav-button is-active" type="button" data-dashboard-tab="overview">
+                  <span aria-hidden="true">⌂</span>Ringkasan
+                </button>
+                <button class="dashboard-nav-button" type="button" data-dashboard-tab="collaboration">
+                  <span aria-hidden="true">✳</span>Hub Kolaborasi
+                </button>
+                <button class="dashboard-nav-button" type="button" data-dashboard-tab="pilot-projects">
+                  <span aria-hidden="true">◈</span>Pilot Project
+                </button>
+                <button class="dashboard-nav-button" type="button" data-dashboard-tab="settings">
+                  <span aria-hidden="true">⚙</span>Pengaturan profil
+                </button>
+              </nav>
+              <div class="dashboard-content">
+                <section class="dashboard-panel" data-dashboard-panel="overview">
+                  <div class="dashboard-page-heading">
+                    <p class="eyebrow">PORTAL ANGGOTA IDTC</p>
+                    <h2>Dashboard</h2>
+                    <p>Selamat datang kembali, <strong id="dashboard-greeting"></strong>.</p>
+                  </div>
+                  <article class="profile-hero">
+                    <div class="profile-avatar profile-avatar-large" data-avatar-display aria-hidden="true">
+                      <img id="profile-avatar-photo" alt="" hidden />
+                      <span></span>
+                    </div>
+                    <div class="profile-hero-copy">
+                      <span class="profile-status"><i></i>AKUN AKTIF</span>
+                      <h3 id="account-name"></h3>
+                      <p id="account-roles"></p>
+                    </div>
+                    <button class="profile-edit-button" type="button" data-dashboard-tab="settings">Atur profil</button>
+                  </article>
+                  <div class="profile-summary-grid">
+                    <article class="profile-summary-card">
+                      <span>EMAIL</span><strong id="account-email"></strong>
+                    </article>
+                    <article class="profile-summary-card member-detail">
+                      <span>NOMOR ANGGOTA</span><strong id="account-member-number"></strong>
+                    </article>
+                    <article class="profile-summary-card member-detail">
+                      <span>INSTANSI / KOMUNITAS</span><strong id="account-organization"></strong>
+                    </article>
+                  </div>
+                  <p class="form-message dashboard-message" id="account-message" role="status" aria-live="polite"></p>
+                  <section class="dashboard-documents" id="dashboard-documents" aria-labelledby="dashboard-documents-title">
+                    <div class="dashboard-documents-heading">
+                      <div>
+                        <p class="eyebrow">DOKUMEN KEANGGOTAAN</p>
+                        <h3 id="dashboard-documents-title">Kartu anggota &amp; sertifikat</h3>
+                        <p id="dashboard-documents-message" role="status">Memuat dokumen keanggotaan...</p>
+                      </div>
+                      <div class="dashboard-document-actions">
+                        <button class="secondary-button" id="dashboard-download-qr" type="button" disabled>Unduh QR</button>
+                        <button class="secondary-button" id="dashboard-print-kta" type="button" disabled>Cetak KTA</button>
+                        <button class="primary-button" id="dashboard-print-certificate" type="button" disabled>Cetak sertifikat</button>
+                      </div>
+                    </div>
+                    <div class="dashboard-documents-grid" id="dashboard-documents-content" hidden>
+                      <article class="dashboard-document-card dashboard-kta-document">
+                        <div>
+                          <p class="dashboard-document-label">KARTU TANDA ANGGOTA</p>
+                          <h4>Kartu anggota digital</h4>
+                          <p class="dashboard-document-hint">Depan dan belakang dicetak pada halaman terpisah.</p>
+                        </div>
+                        <div class="dashboard-kta-stack">
+                          <article class="kta-card kta-card-front dashboard-kta-face" aria-label="Bagian depan Kartu Tanda Anggota IDTC">
+                            <img class="kta-template-image" src="/assets/img/Id_f_01.png" alt="" />
+                            <div class="kta-front-photo"><img id="dashboard-member-photo" alt="Foto anggota" hidden /><span id="dashboard-member-initials"></span></div>
+                            <div class="kta-front-overlay">
+                              <div class="kta-front-details">
+                                <strong id="dashboard-kta-name"></strong>
+                                <span>ANGGOTA IDTC</span>
+                                <small id="dashboard-kta-organization"></small>
+                                <b id="dashboard-kta-number"></b>
+                              </div>
+                            </div>
+                          </article>
+                          <article class="kta-card kta-card-back dashboard-kta-face" aria-label="Bagian belakang Kartu Tanda Anggota IDTC">
+                            <img class="kta-template-image" src="/assets/img/id_b_02.png" alt="" />
+                            <div class="kta-back-overlay">
+                              <div class="kta-back-qr">
+                                <img id="dashboard-kta-qr" alt="QR Code verifikasi keanggotaan" />
+                                <span class="kta-back-number" id="dashboard-kta-back-number"></span>
+                                <span>SCAN UNTUK VERIFIKASI</span>
+                              </div>
+                            </div>
+                          </article>
+                        </div>
+                      </article>
+                      <article class="dashboard-document-card dashboard-certificate-document">
+                        <div>
+                          <p class="dashboard-document-label">SERTIFIKAT KEANGGOTAAN</p>
+                          <h4>Sertifikat anggota</h4>
+                          <p class="dashboard-document-hint">Sertifikat perlu ditandatangani Ketua IDTC sebelum dibagikan.</p>
+                        </div>
+                        <article class="member-certificate dashboard-member-certificate" aria-label="Sertifikat keanggotaan IDTC">
+                          <div class="certificate-frame">
+                            <header class="certificate-header">
+                              <span class="certificate-logo"><img src="/assets/img/IDTC_logo.png" alt="" /></span>
+                              <p>INDONESIA DIGITAL TWIN COMMUNITY</p>
+                            </header>
+                            <p class="certificate-eyebrow">SERTIFIKAT KEANGGOTAAN</p>
+                            <h3>SERTIFIKAT ANGGOTA</h3>
+                            <p class="certificate-intro">Dengan ini menyatakan bahwa</p>
+                            <p class="certificate-name" id="dashboard-certificate-name"></p>
+                            <p class="certificate-number" id="dashboard-certificate-number"></p>
+                            <p class="certificate-description">telah disetujui sebagai anggota aktif Indonesia Digital Twin Community.</p>
+                            <p class="certificate-organization" id="dashboard-certificate-organization"></p>
+                            <footer class="certificate-footer">
+                              <p id="dashboard-certificate-date"></p>
+                              <div class="chair-signature">
+                                <div class="signature-space" aria-label="Ruang tanda tangan Ketua IDTC"></div>
+                                <strong>Ketua IDTC</strong>
+                              </div>
+                            </footer>
+                          </div>
+                        </article>
+                      </article>
+                    </div>
+                  </section>
+                </section>
+                <section class="dashboard-panel" data-dashboard-panel="collaboration" hidden>
+                  <div class="dashboard-page-heading">
+                    <p class="eyebrow">RUANG KREATIF KOMUNITAS</p>
+                    <h2>Hub Kolaborasi</h2>
+                    <p>Jelajahi ide dan topik digital twin dalam visualisasi kata yang hidup.</p>
+                  </div>
+                  <section class="wordcloud-card" aria-labelledby="wordcloud-title">
+                    <div class="wordcloud-card-heading">
+                      <div>
+                        <p class="wordcloud-kicker"><span class="wordcloud-live-dot"></span>IDE YANG TERHUBUNG</p>
+                        <h3 id="wordcloud-title">Peta gagasan IDTC</h3>
+                      </div>
+                      <span class="wordcloud-count" id="wordcloud-count">0 kata</span>
+                    </div>
+                    <div class="wordcloud-sources" role="group" aria-label="Pilih sumber data wordcloud">
+                      <button class="wordcloud-source-button is-selected" type="button" data-cloud-source="all" aria-pressed="true">Instansi &amp; profesi</button>
+                      <button class="wordcloud-source-button" type="button" data-cloud-source="organization" aria-pressed="false">Instansi</button>
+                      <button class="wordcloud-source-button" type="button" data-cloud-source="profession" aria-pressed="false">Profesi</button>
+                    </div>
+                    <div class="wordcloud-shapes" role="group" aria-label="Pilih bentuk wordcloud">
+                      <button class="wordcloud-shape-button is-selected" type="button" data-cloud-shape="circle" aria-pressed="true">Lingkaran</button>
+                      <button class="wordcloud-shape-button" type="button" data-cloud-shape="heart" aria-pressed="false">Hati</button>
+                      <button class="wordcloud-shape-button" type="button" data-cloud-shape="star" aria-pressed="false">Bintang</button>
+                      <button class="wordcloud-shape-button" type="button" data-cloud-shape="cloud" aria-pressed="false">Awan</button>
+                    </div>
+                    <div class="wordcloud-stage" id="wordcloud-stage" data-shape="circle">
+                      <svg class="wordcloud-svg" id="wordcloud-svg" viewBox="0 0 1000 620" role="img" aria-labelledby="wordcloud-svg-title wordcloud-svg-description">
+                        <title id="wordcloud-svg-title">Wordcloud Hub Kolaborasi IDTC</title>
+                        <desc id="wordcloud-svg-description">Visualisasi kata yang bergerak perlahan dalam bentuk lingkaran.</desc>
+                        <path class="wordcloud-outline" id="wordcloud-outline" d="" aria-hidden="true"></path>
+                        <g id="wordcloud-words"></g>
+                      </svg>
+                      <span class="wordcloud-orbit wordcloud-orbit-one" aria-hidden="true"></span>
+                      <span class="wordcloud-orbit wordcloud-orbit-two" aria-hidden="true"></span>
+                    </div>
+                    <div class="wordcloud-actions">
+                      <p class="wordcloud-status" id="wordcloud-status" role="status" aria-live="polite">Instansi dan profesi dimuat dari database anggota aktif.</p>
+                      <div class="wordcloud-action-buttons">
+                        <button class="wordcloud-motion-button" id="wordcloud-motion" type="button" aria-pressed="true">Jeda animasi</button>
+                        <button class="wordcloud-generate-button" id="wordcloud-generate" type="button"><span aria-hidden="true">⟳</span> Acak susunan</button>
+                      </div>
+                    </div>
+                  </section>
+                  <section class="wordcloud-editor" aria-labelledby="wordcloud-editor-title">
+                    <div>
+                      <p class="wordcloud-editor-kicker">SESUAIKAN VISUALISASI</p>
+                      <h3 id="wordcloud-editor-title">Kata dan bobot</h3>
+                      <p>Edit daftar kata atau bobotnya. Data awal diambil dari instansi dan profesi anggota aktif.</p>
+                    </div>
+                    <label class="visually-hidden" for="wordcloud-input">Daftar kata dan bobot wordcloud</label>
+                    <textarea id="wordcloud-input" rows="7" spellcheck="false" placeholder="Data instansi dan profesi anggota aktif akan dimuat dari database."></textarea>
+                    <button class="wordcloud-apply-button" id="wordcloud-apply" type="button">Perbarui wordcloud</button>
+                  </section>
+                  <section class="greeting-wall" aria-labelledby="greeting-wall-title">
+                    <div class="greeting-wall-heading">
+                      <div>
+                        <p class="wordcloud-editor-kicker">APRESIASI KOMUNITAS</p>
+                        <h3 id="greeting-wall-title">Sapa rekan-rekan anggota</h3>
+                        <p>Kirim semangat kecil untuk menjaga kolaborasi tetap hangat.</p>
+                      </div>
+                      <span class="greeting-wall-sparkle" aria-hidden="true">✳</span>
+                    </div>
+                    <form class="greeting-form" id="greeting-form">
+                      <label for="greeting-recipient">Pilih rekan anggota</label>
+                      <select id="greeting-recipient" name="recipientId" required disabled>
+                        <option value="">Memuat daftar anggota...</option>
+                      </select>
+                      <label for="greeting-message">Pesan sapaan <span>(opsional)</span></label>
+                      <textarea id="greeting-message" name="message" rows="2" maxlength="240" placeholder="Tulis sapaan hangat untuk rekan Anda..."></textarea>
+                      <fieldset class="greeting-reactions">
+                        <legend>Pilih apresiasi</legend>
+                        <label class="greeting-reaction-option">
+                          <input type="radio" name="reaction" value="love" checked />
+                          <span aria-hidden="true">❤️</span><span>Love</span>
+                        </label>
+                        <label class="greeting-reaction-option">
+                          <input type="radio" name="reaction" value="flower" />
+                          <span aria-hidden="true">🌸</span><span>Bunga</span>
+                        </label>
+                        <label class="greeting-reaction-option">
+                          <input type="radio" name="reaction" value="crown" />
+                          <span aria-hidden="true">👑</span><span>Mahkota</span>
+                        </label>
+                      </fieldset>
+                      <p class="greeting-form-message" id="greeting-form-message" role="status" aria-live="polite"></p>
+                      <button class="greeting-submit-button" id="greeting-submit" type="submit" disabled>Kirim sapaan <span aria-hidden="true">♡</span></button>
+                    </form>
+                    <div class="greeting-feed-heading">
+                      <h4>Dinding apresiasi</h4>
+                      <span id="greeting-feed-count">Memuat...</span>
+                    </div>
+                    <p class="greeting-feed-message" id="greeting-feed-message" role="status" aria-live="polite">Memuat sapaan anggota...</p>
+                    <div class="greeting-feed" id="greeting-feed" aria-live="polite"></div>
+                  </section>
+                </section>
+                <section class="dashboard-panel" data-dashboard-panel="pilot-projects" hidden>
+                  <div class="dashboard-page-heading">
+                    <p class="eyebrow">RUANG KERJA BERSAMA</p>
+                    <h2>Daftar Grup Pilot Project</h2>
+                    <p>Lihat fokus project, admin pengelola, Project Manager, dan anggota tim beserta keahliannya.</p>
+                  </div>
+                  <section class="pilot-project-intro">
+                    <span class="pilot-project-icon" aria-hidden="true">◈</span>
+                    <div><strong>Kolaborasi yang berdampak</strong><p>Setiap project menampilkan fokus utama dan susunan tim agar peran dan keahlian mudah dikenali.</p></div>
+                    <button class="pilot-project-create-button" id="pilot-project-open-create" type="button">+ Buat group</button>
+                  </section>
+                  <div class="pilot-project-list-heading">
+                    <div><p class="eyebrow">KOLABORASI AKTIF</p><h3>Daftar Grup Pilot Project</h3></div>
+                    <span aria-hidden="true">◈</span>
+                  </div>
+                  <p class="pilot-project-message" id="pilot-project-message" role="status" aria-live="polite">Memuat group pilot project...</p>
+                  <div class="pilot-project-grid" id="pilot-project-list" aria-live="polite"></div>
+                  <form class="pilot-project-form" id="pilot-project-form" hidden>
+                    <div class="pilot-project-form-heading">
+                      <div><p class="wordcloud-editor-kicker">MULAI KOLABORASI</p><h3>Buat group pilot project</h3></div>
+                      <button class="pilot-project-close" id="pilot-project-close-create" type="button" aria-label="Tutup form group">×</button>
+                    </div>
+                    <label for="pilot-project-name">Nama group</label>
+                    <input id="pilot-project-name" name="name" type="text" maxlength="120" placeholder="Contoh: Digital Twin untuk Ketahanan Banjir" required />
+                    <label for="pilot-project-focus">Fokus pilot project</label>
+                    <input id="pilot-project-focus" name="focus" type="text" maxlength="180" placeholder="Contoh: Smart City, GIS, atau manufaktur" required />
+                    <label for="pilot-project-description">Deskripsi <span>(opsional)</span></label>
+                    <textarea id="pilot-project-description" name="description" rows="3" maxlength="1000" placeholder="Ceritakan tantangan atau tujuan project ini."></textarea>
+                    <p class="pilot-project-form-error" id="pilot-project-form-error" role="alert"></p>
+                    <button class="pilot-project-create-button" id="pilot-project-submit" type="submit">Simpan group</button>
+                  </form>
+                </section>
+                <section class="dashboard-panel" data-dashboard-panel="settings" hidden>
+                  <div class="dashboard-page-heading">
+                    <p class="eyebrow">AKUN ANDA</p>
+                    <h2>Pengaturan profil</h2>
+                    <p>Perbarui informasi dan pilih avatar karakter Anda.</p>
+                  </div>
+                  <form id="profile-form" class="profile-form" novalidate>
+                    <div class="profile-form-grid">
+                      <div class="field-group">
+                        <label for="profile-full-name">Nama lengkap</label>
+                        <input id="profile-full-name" name="fullName" type="text" maxlength="150" autocomplete="name" required />
+                        <span class="field-error" id="profile-name-error"></span>
+                      </div>
+                      <div class="field-group">
+                        <label for="profile-email">Alamat email</label>
+                        <input id="profile-email" type="email" disabled />
+                        <span class="profile-help">Email akun tidak dapat diubah di sini.</span>
+                      </div>
+                      <div class="field-group profile-organization-field">
+                        <label for="profile-organization">Instansi atau komunitas</label>
+                        <input id="profile-organization" name="organization" type="text" maxlength="180" autocomplete="organization" placeholder="Nama instansi (opsional)" />
+                        <span class="field-error" id="profile-organization-error"></span>
+                      </div>
+                      <div class="field-group">
+                        <label for="profile-profession">Profesi atau jabatan</label>
+                        <input id="profile-profession" name="profession" type="text" maxlength="180" autocomplete="organization-title" placeholder="Contoh: GIS Specialist (opsional)" />
+                        <span class="field-error" id="profile-profession-error"></span>
+                      </div>
+                    </div>
+                    <section class="profile-photo-settings" aria-labelledby="profile-photo-title">
+                      <div class="profile-photo-preview profile-avatar" aria-hidden="true">
+                        <img id="profile-photo-preview" alt="" hidden />
+                        <span id="profile-photo-avatar"></span>
+                      </div>
+                      <div class="profile-photo-copy">
+                        <h3 id="profile-photo-title">Foto profil</h3>
+                        <p>Pilih foto untuk profil dan KTA, atau gunakan avatar karakter pilihan Anda.</p>
+                        <div class="profile-photo-actions">
+                          <label class="profile-photo-select" for="profile-photo-input">Pilih foto</label>
+                          <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+                          <button class="profile-photo-save" id="profile-photo-save" type="button" disabled>Simpan foto</button>
+                          <button class="profile-photo-remove" id="profile-photo-remove" type="button" hidden>Gunakan avatar</button>
+                        </div>
+                        <span class="profile-help" id="profile-photo-help">JPG, PNG, atau WEBP. Maksimal 5 MB.</span>
+                        <span class="field-error" id="profile-photo-error" role="alert"></span>
+                      </div>
+                    </section>
+                    <fieldset class="avatar-fieldset">
+                      <legend>Avatar karakter</legend>
+                      <p>Pilih karakter yang mewakili Anda di portal IDTC.</p>
+                      <div class="avatar-picker">
+                        <label class="avatar-option" data-avatar-option="explorer"><input type="radio" name="avatarId" value="explorer" /><span class="avatar-art"><span>🧭</span></span><span>Penjelajah</span></label>
+                        <label class="avatar-option" data-avatar-option="engineer"><input type="radio" name="avatarId" value="engineer" /><span class="avatar-art"><span>🧑‍💻</span></span><span>Insinyur</span></label>
+                        <label class="avatar-option" data-avatar-option="scientist"><input type="radio" name="avatarId" value="scientist" /><span class="avatar-art"><span>🧑‍🔬</span></span><span>Ilmuwan</span></label>
+                        <label class="avatar-option" data-avatar-option="creator"><input type="radio" name="avatarId" value="creator" /><span class="avatar-art"><span>🎨</span></span><span>Kreator</span></label>
+                        <label class="avatar-option" data-avatar-option="pioneer"><input type="radio" name="avatarId" value="pioneer" /><span class="avatar-art"><span>🚀</span></span><span>Pionir</span></label>
+                        <label class="avatar-option" data-avatar-option="visionary"><input type="radio" name="avatarId" value="visionary" /><span class="avatar-art"><span>🦾</span></span><span>Visioner</span></label>
+                      </div>
+                    </fieldset>
+                    <div class="profile-form-actions">
+                      <button class="submit-button" id="profile-save-button" type="submit">Simpan pengaturan</button>
+                      <button class="profile-cancel-button" type="button" data-dashboard-tab="overview">Batal</button>
+                    </div>
+                    <p class="form-message profile-message" id="profile-message" role="status" aria-live="polite"></p>
+                  </form>
+                  <section class="account-social">
+                    <h3>Login dengan akun sosial</h3>
+                    <p>Tautkan akun yang Anda miliki untuk memakainya saat masuk berikutnya.</p>
+                    <div class="social-buttons">
+                      <button class="social-button" type="button" data-provider="google" data-link-provider disabled><span class="social-icon google-icon" aria-hidden="true">G</span><span>Google</span></button>
+                      <button class="social-button" type="button" data-provider="facebook" data-link-provider disabled><span class="social-icon facebook-icon" aria-hidden="true">f</span><span>Facebook</span></button>
+                      <button class="social-button" type="button" data-provider="instagram" data-link-provider disabled><span class="social-icon instagram-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1"/></svg></span><span>Instagram</span></button>
+                      <button class="social-button" type="button" data-provider="apple" data-link-provider disabled><span class="social-icon apple-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.7 12.7c0-2 1.6-3 1.7-3.1a3.7 3.7 0 0 0-2.9-1.6c-1.2-.1-2.4.7-3 .7s-1.5-.7-2.5-.7a3.8 3.8 0 0 0-3.2 2c-1.4 2.4-.4 6 1 8 .7 1 1.4 2 2.4 2s1.3-.6 2.5-.6 1.6.6 2.6.6 1.7-1 2.3-2a8.6 8.6 0 0 0 1-2.1 3.4 3.4 0 0 1-2-3.2ZM14.8 6.8a3.5 3.5 0 0 0 .8-2.5 3.7 3.7 0 0 0-2.4 1.2 3.3 3.3 0 0 0-.8 2.4 3.1 3.1 0 0 0 2.4-1.1Z"/></svg></span><span>Apple</span></button>
+                    </div>
+                    <p class="social-note">Login sosial aktif setelah provider dikonfigurasi. Akun yang ditautkan hanya dapat dipakai untuk akun IDTC ini.</p>
+                  </section>
+                </section>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <dialog class="password-change-dialog" id="password-change-dialog" aria-labelledby="password-change-title">
+      <div class="password-change-heading">
+        <p class="eyebrow">KEAMANAN AKUN IDTC</p>
+        <h2 id="password-change-title">Buat kata sandi baru</h2>
+        <p>Kata sandi sementara harus diganti sebelum Anda dapat melanjutkan ke profil.</p>
+      </div>
+      <form id="password-change-form" novalidate>
+        <label for="new-password">Kata sandi baru</label>
+        <input id="new-password" name="password" type="password" minlength="12" maxlength="72" autocomplete="new-password" required />
+        <span class="password-change-error" id="new-password-error"></span>
+        <label for="new-password-confirmation">Ulangi kata sandi baru</label>
+        <input id="new-password-confirmation" name="passwordConfirmation" type="password" minlength="12" maxlength="72" autocomplete="new-password" required />
+        <span class="password-change-error" id="new-password-confirmation-error"></span>
+        <p class="password-change-help">Gunakan minimal 12 karakter dan jangan gunakan kembali kata sandi sementara.</p>
+        <p class="password-change-message" id="password-change-message" role="alert" aria-live="assertive"></p>
+        <button class="primary-button" id="password-change-submit" type="submit">Simpan kata sandi dan lanjutkan</button>
+      </form>
+    </dialog>
+    <script src="script.js"></script>
+  </body>
+</html>
